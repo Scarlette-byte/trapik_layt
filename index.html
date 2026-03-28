@@ -1,160 +1,116 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>Traffic Light — IoT Dashboard</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-:root {
-  --bg:          #f0f2f5;
-  --surface:     #ffffff;
-  --surface2:    #f7f8fa;
-  --border:      #e2e5ea;
-  --text:        #1a1d23;
-  --muted:       #6b7280;
-  --red:         #ef4444;
-  --red-dark:    #b91c1c;
-  --green:       #22c55e;
-  --green-dark:  #15803d;
-  --yellow:      #f59e0b;
-  --yellow-dark: #b45309;
-  --blue:        #3b82f6;
-  --blue-dark:   #1d4ed8;
-  --shadow-sm:   0 1px 3px rgba(0,0,0,0.08),0 1px 2px rgba(0,0,0,0.04);
-  --radius:      14px;
-  --radius-sm:   8px;
+:root{
+  --bg:#0f1117;--surface:#161b26;--surface2:#1c2233;
+  --border:#242d40;--text:#e2e8f0;--muted:#64748b;
+  --red:#ef4444;--red-dark:#b91c1c;
+  --green:#22c55e;--green-dark:#15803d;
+  --yellow:#f59e0b;--yellow-dark:#b45309;
+  --blue:#3b82f6;--blue-dark:#1d4ed8;
+  --shadow:0 2px 14px rgba(0,0,0,.6);
+  --radius:14px;--radius-sm:8px;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.5;}
 
-header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 28px;height:60px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow-sm);position:sticky;top:0;z-index:100;}
-.logo{display:flex;align-items:center;gap:10px;font-weight:600;font-size:1rem;}
-.logo-icon{width:32px;height:32px;background:#2563eb;border-radius:8px;display:grid;place-items:center;font-size:16px;}
-.logo-sub{font-size:.72rem;font-weight:400;color:var(--muted);display:block;line-height:1;}
-.header-right{display:flex;align-items:center;gap:14px;}
-.status-chip{display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:100px;font-size:.78rem;font-weight:500;background:var(--surface2);border:1px solid var(--border);}
-.status-dot{width:7px;height:7px;border-radius:50%;background:#d1d5db;}
+header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow);position:sticky;top:0;z-index:100;}
+.logo{display:flex;align-items:center;gap:10px;font-weight:600;font-size:.95rem;}
+.logo-icon{width:30px;height:30px;background:#1d4ed8;border-radius:7px;display:grid;place-items:center;font-size:15px;}
+.logo-sub{font-size:.68rem;font-weight:400;color:var(--muted);display:block;line-height:1.1;}
+.header-right{display:flex;align-items:center;gap:12px;}
+.status-chip{display:flex;align-items:center;gap:6px;padding:4px 11px;border-radius:100px;font-size:.75rem;font-weight:500;background:var(--surface2);border:1px solid var(--border);}
+.status-dot{width:6px;height:6px;border-radius:50%;background:#374151;}
 .status-dot.connected{background:var(--green);box-shadow:0 0 0 2px rgba(34,197,94,.2);animation:pdot 2s infinite;}
 .status-dot.active{background:var(--blue);box-shadow:0 0 0 2px rgba(59,130,246,.2);animation:pdot 2s infinite;}
-@keyframes pdot{0%,100%{opacity:1}50%{opacity:.5}}
-.clock-chip{font-family:'DM Mono',monospace;font-size:.85rem;color:var(--muted);}
+@keyframes pdot{0%,100%{opacity:1}50%{opacity:.4}}
+.clock-chip{font-family:'DM Mono',monospace;font-size:.82rem;color:var(--muted);}
 
-main{max-width:1360px;margin:0 auto;padding:20px 20px 40px;display:grid;grid-template-columns:240px 1fr 260px;gap:16px;}
+main{max-width:1420px;margin:0 auto;padding:16px 16px 36px;display:grid;grid-template-columns:220px 1fr 240px;gap:14px;}
 
-.card{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow-sm);overflow:hidden;}
-.card-header{padding:14px 16px 0;display:flex;align-items:center;justify-content:space-between;}
-.card-title{font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);}
-.card-body{padding:14px 16px 16px;}
+.card{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden;}
+.card-header{padding:12px 14px 0;display:flex;align-items:center;justify-content:space-between;}
+.card-title{font-size:.68rem;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);}
+.card-body{padding:12px 14px 14px;}
 
 /* Traffic light panel */
-.tl-panel{grid-column:1;grid-row:1/3;}
-.tl-housing{width:76px;margin:4px auto 14px;background:#1f2937;border-radius:14px;padding:14px 12px;display:flex;flex-direction:column;gap:10px;align-items:center;box-shadow:0 8px 24px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.05);position:relative;}
-.tl-housing::after{content:'';position:absolute;bottom:-22px;left:50%;transform:translateX(-50%);width:6px;height:22px;background:#374151;border-radius:0 0 3px 3px;}
-.tl-bulb{width:44px;height:44px;border-radius:50%;background:#374151;transition:all .15s ease;position:relative;}
-.tl-bulb::after{content:'';position:absolute;inset:5px;border-radius:50%;background:radial-gradient(circle at 35% 35%,rgba(255,255,255,.3),transparent 60%);}
-.tl-bulb.red-on   {background:var(--red);   box-shadow:0 0 0 3px rgba(239,68,68,.25),0 0 20px rgba(239,68,68,.65);}
-.tl-bulb.yellow-on{background:var(--yellow);box-shadow:0 0 0 3px rgba(245,158,11,.25),0 0 20px rgba(245,158,11,.65);}
-.tl-bulb.green-on {background:var(--green); box-shadow:0 0 0 3px rgba(34,197,94,.25),0 0 20px rgba(34,197,94,.65);}
+.tl-panel{grid-column:1;grid-row:1;}
+.tl-housing{width:68px;margin:4px auto 14px;background:#0a0d14;border-radius:12px;padding:11px 9px;display:flex;flex-direction:column;gap:9px;align-items:center;box-shadow:0 8px 28px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.04);position:relative;}
+.tl-housing::after{content:'';position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);width:5px;height:18px;background:#2d3748;border-radius:0 0 3px 3px;}
+.tl-bulb{width:38px;height:38px;border-radius:50%;background:#141a26;transition:all .15s ease;position:relative;}
+.tl-bulb::after{content:'';position:absolute;inset:5px;border-radius:50%;background:radial-gradient(circle at 35% 35%,rgba(255,255,255,.12),transparent 60%);}
+.tl-bulb.red-on{background:var(--red);box-shadow:0 0 0 3px rgba(239,68,68,.18),0 0 22px rgba(239,68,68,.7);}
+.tl-bulb.yellow-on{background:var(--yellow);box-shadow:0 0 0 3px rgba(245,158,11,.18),0 0 22px rgba(245,158,11,.7);}
+.tl-bulb.green-on{background:var(--green);box-shadow:0 0 0 3px rgba(34,197,94,.18),0 0 22px rgba(34,197,94,.7);}
 .tl-bulb.blink-anim{animation:blink .4s step-end infinite;}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.1}}
-.state-badge{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:8px 12px;border-radius:100px;font-size:.88rem;font-weight:600;background:#f3f4f6;color:var(--muted);width:100%;transition:all .2s;}
-.state-badge.red{background:#fef2f2;color:var(--red);}
-.state-badge.yellow{background:#fffbeb;color:var(--yellow);}
-.state-badge.green{background:#f0fdf4;color:var(--green);}
-.cd-row{display:flex;align-items:center;justify-content:space-between;margin-top:12px;}
-.cd-label{font-size:.7rem;color:var(--muted);font-weight:500;}
-.cd-num{font-family:'DM Mono',monospace;font-size:1.9rem;font-weight:500;line-height:1;color:var(--text);transition:color .2s;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.07}}
+.state-badge{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:7px 10px;border-radius:100px;font-size:.84rem;font-weight:600;background:var(--surface2);color:var(--muted);width:100%;transition:all .2s;border:1px solid var(--border);}
+.state-badge.red{background:rgba(239,68,68,.1);color:var(--red);border-color:rgba(239,68,68,.25);}
+.state-badge.yellow{background:rgba(245,158,11,.1);color:var(--yellow);border-color:rgba(245,158,11,.25);}
+.state-badge.green{background:rgba(34,197,94,.1);color:var(--green);border-color:rgba(34,197,94,.25);}
+.cd-row{display:flex;align-items:center;justify-content:space-between;margin-top:11px;}
+.cd-label{font-size:.67rem;color:var(--muted);font-weight:500;}
+.cd-num{font-family:'DM Mono',monospace;font-size:1.8rem;font-weight:500;line-height:1;color:var(--text);transition:color .2s;}
 .cd-num.red{color:var(--red);}.cd-num.yellow{color:var(--yellow);}.cd-num.green{color:var(--green);}
-.progress-track{height:5px;background:var(--bg);border-radius:99px;overflow:hidden;margin-top:7px;}
-.progress-fill{height:100%;border-radius:99px;transition:width 1s linear,background .2s;background:var(--muted);}
-.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:12px;}
-.stat-item{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:9px 11px;}
-.stat-key{font-size:.62rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:2px;}
-.stat-val{font-family:'DM Mono',monospace;font-size:.95rem;font-weight:500;color:var(--text);}
+.progress-track{height:4px;background:var(--bg);border-radius:99px;overflow:hidden;margin-top:6px;}
+.progress-fill{height:100%;border-radius:99px;transition:width 1s linear,background .2s;}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:11px;}
+.stat-item{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 10px;}
+.stat-key{font-size:.6rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:2px;}
+.stat-val{font-family:'DM Mono',monospace;font-size:.9rem;font-weight:500;color:var(--text);}
 
 /* Scene */
 .scene-panel{grid-column:2;grid-row:1;}
-.scene-wrap{position:relative;width:100%;height:340px;border-radius:var(--radius) var(--radius) 0 0;overflow:hidden;background:#3d7a3d;}
+.scene-wrap{position:relative;width:100%;height:520px;border-radius:var(--radius) var(--radius) 0 0;overflow:hidden;background:#0d1117;}
 #gameCanvas{display:block;width:100%;height:100%;}
-
-.cam-badge{position:absolute;top:10px;right:12px;font-size:.65rem;font-weight:600;color:#fff;background:rgba(239,68,68,.82);padding:3px 9px;border-radius:4px;letter-spacing:.04em;}
-.loc-tag{position:absolute;top:10px;left:12px;font-size:.7rem;color:rgba(255,255,255,.9);background:rgba(0,0,0,.42);padding:4px 10px;border-radius:6px;}
-
-.drive-hint{position:absolute;bottom:10px;right:12px;display:flex;gap:5px;align-items:center;background:rgba(0,0,0,.42);border-radius:7px;padding:5px 10px;}
-.key-badge{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:4px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);font-size:.62rem;font-weight:600;color:#fff;}
-.drive-hint span{font-size:.63rem;color:rgba(255,255,255,.72);}
-
-.violation-flash{position:absolute;inset:0;background:rgba(239,68,68,0);pointer-events:none;border-radius:var(--radius) var(--radius) 0 0;transition:background .12s;}
-.violation-flash.on{background:rgba(239,68,68,.24);}
-
-.scene-infobar{padding:10px 14px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;border-top:1px solid var(--border);}
-.info-chip{display:flex;align-items:center;gap:6px;font-size:.75rem;color:var(--muted);font-weight:500;}
+.cam-badge{position:absolute;top:10px;right:12px;font-size:.62rem;font-weight:700;color:#fff;background:rgba(239,68,68,.85);padding:3px 9px;border-radius:4px;letter-spacing:.05em;}
+.loc-tag{position:absolute;top:10px;left:12px;font-size:.68rem;color:rgba(255,255,255,.82);background:rgba(0,0,0,.55);padding:4px 10px;border-radius:6px;backdrop-filter:blur(4px);}
+.drive-hint{position:absolute;bottom:10px;right:12px;display:flex;gap:5px;align-items:center;background:rgba(0,0,0,.55);border-radius:7px;padding:5px 10px;backdrop-filter:blur(4px);}
+.key-badge{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:4px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);font-size:.6rem;font-weight:700;color:#fff;}
+.drive-hint span{font-size:.62rem;color:rgba(255,255,255,.62);}
+.violation-flash{position:absolute;inset:0;background:rgba(239,68,68,0);pointer-events:none;transition:background .1s;}
+.violation-flash.on{background:rgba(239,68,68,.2);}
+.scene-infobar{padding:9px 14px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;border-top:1px solid var(--border);background:var(--surface2);}
+.info-chip{display:flex;align-items:center;gap:6px;font-size:.73rem;color:var(--muted);font-weight:500;}
 .info-chip b{color:var(--text);}
-.speed-bar-track{width:80px;height:5px;background:var(--bg);border-radius:99px;overflow:hidden;}
+.speed-bar-track{width:70px;height:4px;background:var(--bg);border-radius:99px;overflow:hidden;}
 .speed-bar-fill{height:100%;background:var(--green);border-radius:99px;transition:width .1s,background .2s;}
 
 /* Controls */
-.controls-panel{grid-column:3;grid-row:1/3;}
-.ctrl-btn{width:100%;padding:12px 16px;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:10px;transition:transform .07s,box-shadow .07s;outline:none;}
-.ctrl-btn:active{transform:translateY(3px);}
-.btn-icon-wrap{width:28px;height:28px;border-radius:6px;background:rgba(255,255,255,.22);display:grid;place-items:center;font-size:13px;flex-shrink:0;}
-.btn-start{background:var(--green);color:#fff;box-shadow:0 4px 0 var(--green-dark);}
-.btn-start:hover{background:#16a34a;box-shadow:0 4px 0 #166534;}
-.btn-start:active{box-shadow:0 1px 0 var(--green-dark);}
-.btn-stop{background:var(--red);color:#fff;box-shadow:0 4px 0 var(--red-dark);}
-.btn-stop:hover{background:#dc2626;box-shadow:0 4px 0 #991b1b;}
-.btn-stop:active{box-shadow:0 1px 0 var(--red-dark);}
-.btn-blink{background:var(--yellow);color:#fff;box-shadow:0 4px 0 var(--yellow-dark);}
-.btn-blink:hover{background:#d97706;box-shadow:0 4px 0 #92400e;}
-.btn-blink:active{box-shadow:0 1px 0 var(--yellow-dark);}
-.mode-indicator{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;}
-.mode-row{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--border);font-size:.77rem;}
+.controls-panel{grid-column:3;grid-row:1;}
+.ctrl-btn{width:100%;padding:11px 14px;border:none;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:10px;transition:transform .07s,filter .1s;outline:none;}
+.ctrl-btn:hover{filter:brightness(1.12);}
+.ctrl-btn:active{transform:translateY(2px);}
+.btn-icon-wrap{width:26px;height:26px;border-radius:6px;background:rgba(255,255,255,.16);display:grid;place-items:center;font-size:12px;flex-shrink:0;}
+.btn-start{background:#16a34a;color:#fff;box-shadow:0 4px 0 #14532d;}
+.btn-start:active{box-shadow:0 1px 0 #14532d;}
+.btn-stop{background:#dc2626;color:#fff;box-shadow:0 4px 0 #7f1d1d;}
+.btn-stop:active{box-shadow:0 1px 0 #7f1d1d;}
+.btn-blink{background:#d97706;color:#fff;box-shadow:0 4px 0 #78350f;}
+.btn-blink:active{box-shadow:0 1px 0 #78350f;}
+.mode-indicator{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;}
+.mode-row{display:flex;align-items:center;justify-content:space-between;padding:8px 11px;border-bottom:1px solid var(--border);font-size:.75rem;}
 .mode-row:last-child{border-bottom:none;}
 .mode-label{color:var(--muted);font-weight:500;}
-.mode-pip{width:8px;height:8px;border-radius:50%;background:var(--border);transition:background .2s,box-shadow .2s;}
-.mode-pip.active{background:var(--green);box-shadow:0 0 0 3px rgba(34,197,94,.2);}
-.log-list{display:flex;flex-direction:column;max-height:150px;overflow:hidden;}
-.log-entry{display:flex;align-items:flex-start;gap:7px;padding:6px 0;border-bottom:1px solid var(--border);animation:fadeSlide .2s ease;}
+.mode-pip{width:7px;height:7px;border-radius:50%;background:var(--border);transition:all .2s;}
+.mode-pip.active{background:var(--green);box-shadow:0 0 0 3px rgba(34,197,94,.15);}
+.log-list{display:flex;flex-direction:column;max-height:210px;overflow:hidden;}
+.log-entry{display:flex;align-items:flex-start;gap:7px;padding:5px 0;border-bottom:1px solid var(--border);animation:fadeSlide .2s ease;}
 .log-entry:last-child{border-bottom:none;}
-@keyframes fadeSlide{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
-.log-time{font-family:'DM Mono',monospace;font-size:.62rem;color:var(--muted);flex-shrink:0;padding-top:1px;}
-.log-msg{font-size:.73rem;font-weight:500;}
-.log-msg.green{color:var(--green-dark);}.log-msg.yellow{color:var(--yellow-dark);}.log-msg.red{color:var(--red-dark);}.log-msg.blue{color:var(--blue-dark);}
+@keyframes fadeSlide{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.log-time{font-family:'DM Mono',monospace;font-size:.6rem;color:var(--muted);flex-shrink:0;padding-top:1px;}
+.log-msg{font-size:.71rem;font-weight:500;}
+.log-msg.green{color:#4ade80;}.log-msg.yellow{color:#fbbf24;}.log-msg.red{color:#f87171;}.log-msg.blue{color:#60a5fa;}
 
-/* Graph */
-.graph-panel{grid-column:2;grid-row:2;}
-.graph-body{padding:0 16px 16px;display:flex;gap:14px;}
-.chart-wrap{flex:1;min-width:0;}
-
-/* Metrics */
-.metrics-strip{grid-column:1/4;grid-row:3;display:grid;grid-template-columns:repeat(6,1fr);gap:12px;}
-.metric-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow-sm);border-top:3px solid var(--border);}
-.metric-card.green-card{border-top-color:var(--green);}
-.metric-card.yellow-card{border-top-color:var(--yellow);}
-.metric-card.red-card{border-top-color:var(--red);}
-.metric-card.blue-card{border-top-color:var(--blue);}
-.metric-card.indigo-card{border-top-color:#6366f1;}
-.metric-card.orange-card{border-top-color:#f97316;}
-.mc-label{font-size:.62rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:5px;}
-.mc-value{font-family:'DM Mono',monospace;font-size:1.5rem;font-weight:500;color:var(--text);line-height:1;}
-.green-card .mc-value{color:#15803d;}.yellow-card .mc-value{color:#b45309;}.red-card .mc-value{color:#b91c1c;}
-.blue-card .mc-value{color:#1d4ed8;}.indigo-card .mc-value{color:#4338ca;}.orange-card .mc-value{color:#c2410c;}
-
-@media(max-width:1000px){
-  main{grid-template-columns:1fr 1fr;}
-  .tl-panel{grid-column:1;grid-row:1;}.controls-panel{grid-column:2;grid-row:1;}
-  .scene-panel{grid-column:1/3;grid-row:2;}.graph-panel{grid-column:1/3;grid-row:3;}
-  .metrics-strip{grid-column:1/3;grid-row:4;grid-template-columns:repeat(3,1fr);}
-}
-@media(max-width:600px){
-  main{grid-template-columns:1fr;padding:12px;}
-  .tl-panel,.controls-panel,.scene-panel,.graph-panel{grid-column:1;}
-  .metrics-strip{grid-column:1;grid-template-columns:repeat(2,1fr);}
-}
+@media(max-width:1000px){main{grid-template-columns:1fr 1fr;}.tl-panel{grid-column:1;}.controls-panel{grid-column:2;}.scene-panel{grid-column:1/3;grid-row:2;}}
+@media(max-width:600px){main{grid-template-columns:1fr;padding:10px;}.tl-panel,.controls-panel,.scene-panel{grid-column:1;}}
 </style>
 </head>
 <body>
@@ -172,12 +128,10 @@ main{max-width:1360px;margin:0 auto;padding:20px 20px 40px;display:grid;grid-tem
 </header>
 
 <main>
-
-  <!-- Traffic Light -->
   <div class="card tl-panel">
     <div class="card-header"><span class="card-title">Traffic Unit</span></div>
     <div class="card-body">
-      <div style="padding-top:6px;padding-bottom:28px;">
+      <div style="padding-top:6px;padding-bottom:26px;">
         <div class="tl-housing">
           <div class="tl-bulb" id="bulbRed"></div>
           <div class="tl-bulb" id="bulbYellow"></div>
@@ -185,10 +139,7 @@ main{max-width:1360px;margin:0 auto;padding:20px 20px 40px;display:grid;grid-tem
         </div>
       </div>
       <div class="state-badge" id="stateLabel">— Offline —</div>
-      <div class="cd-row">
-        <span class="cd-label">Time Remaining</span>
-        <span class="cd-num" id="cdNum">--</span>
-      </div>
+      <div class="cd-row"><span class="cd-label">Time Remaining</span><span class="cd-num" id="cdNum">--</span></div>
       <div class="progress-track"><div class="progress-fill" id="cdBar" style="width:0%"></div></div>
       <div class="stat-grid">
         <div class="stat-item"><div class="stat-key">Mode</div><div class="stat-val" id="modeVal">---</div></div>
@@ -199,11 +150,10 @@ main{max-width:1360px;margin:0 auto;padding:20px 20px 40px;display:grid;grid-tem
     </div>
   </div>
 
-  <!-- Scene -->
   <div class="card scene-panel" style="padding:0;">
-    <div class="card-header" style="padding:12px 14px 8px;">
-      <span class="card-title">📍 Sayre Hwy Intersection · Manolo Fortich</span>
-      <span style="font-size:.7rem;color:var(--muted);">Top-down · Drive with W A D / Arrow keys</span>
+    <div class="card-header" style="padding:11px 14px 8px;">
+      <span class="card-title">📍 Sayre Hwy · Manolo Fortich — Overhead Map</span>
+      <span style="font-size:.68rem;color:var(--muted);">W A D / Arrow keys · Stay on road</span>
     </div>
     <div class="scene-wrap">
       <canvas id="gameCanvas"></canvas>
@@ -211,9 +161,9 @@ main{max-width:1360px;margin:0 auto;padding:20px 20px 40px;display:grid;grid-tem
       <div class="cam-badge">● LIVE</div>
       <div class="loc-tag">📍 Sayre Hwy Intersection</div>
       <div class="drive-hint">
-        <span>Accel:</span><div class="key-badge">W</div><div class="key-badge">↑</div>
-        <span style="margin:0 3px;">·</span>
-        <span>Steer:</span><div class="key-badge">A</div><div class="key-badge">D</div>
+        <span>Go:</span><div class="key-badge">W</div><div class="key-badge">↑</div>
+        <span style="margin:0 2px;">·</span>
+        <span>Turn:</span><div class="key-badge">A</div><div class="key-badge">D</div>
       </div>
     </div>
     <div class="scene-infobar">
@@ -224,49 +174,28 @@ main{max-width:1360px;margin:0 auto;padding:20px 20px 40px;display:grid;grid-tem
     </div>
   </div>
 
-  <!-- Controls -->
   <div class="card controls-panel">
     <div class="card-header"><span class="card-title">System Controls</span></div>
-    <div class="card-body" style="display:flex;flex-direction:column;gap:9px;">
+    <div class="card-body" style="display:flex;flex-direction:column;gap:8px;">
       <button class="ctrl-btn btn-start" onclick="sendCommand(1)"><div class="btn-icon-wrap">▶</div>Start System</button>
       <button class="ctrl-btn btn-stop"  onclick="sendCommand(0)"><div class="btn-icon-wrap">■</div>Stop System</button>
       <button class="ctrl-btn btn-blink" onclick="sendCommand(2)"><div class="btn-icon-wrap">⚡</div>Blink Mode</button>
       <div class="mode-indicator">
-        <div class="mode-row"><span class="mode-label">[ 0 ]  Off</span>   <div class="mode-pip" id="m0"></div></div>
+        <div class="mode-row"><span class="mode-label">[ 0 ]  Off</span><div class="mode-pip" id="m0"></div></div>
         <div class="mode-row"><span class="mode-label">[ 1 ]  Normal</span><div class="mode-pip" id="m1"></div></div>
-        <div class="mode-row"><span class="mode-label">[ 2 ]  Blink</span> <div class="mode-pip" id="m2"></div></div>
+        <div class="mode-row"><span class="mode-label">[ 2 ]  Blink</span><div class="mode-pip" id="m2"></div></div>
       </div>
       <div style="margin-top:4px;">
-        <div class="card-title" style="margin-bottom:8px;">Event Log</div>
+        <div class="card-title" style="margin-bottom:7px;">Event Log</div>
         <div class="log-list" id="eventLog"></div>
       </div>
     </div>
   </div>
-
-  <!-- Graph -->
-  <div class="card graph-panel">
-    <div class="card-header" style="padding-bottom:10px;"><span class="card-title">Traffic Analytics</span></div>
-    <div class="graph-body">
-      <div class="chart-wrap" style="height:145px;"><canvas id="lineChart"></canvas></div>
-      <div class="chart-wrap" style="height:145px;max-width:145px;"><canvas id="donutChart"></canvas></div>
-    </div>
-  </div>
-
-  <!-- Metrics -->
-  <div class="metrics-strip">
-    <div class="metric-card green-card"><div class="mc-label">Green Phases</div><div class="mc-value" id="m-green">0</div></div>
-    <div class="metric-card yellow-card"><div class="mc-label">Yellow Phases</div><div class="mc-value" id="m-yellow">0</div></div>
-    <div class="metric-card red-card"><div class="mc-label">Red Phases</div><div class="mc-value" id="m-red">0</div></div>
-    <div class="metric-card blue-card"><div class="mc-label">Trips Completed</div><div class="mc-value" id="m-vehicles">0</div></div>
-    <div class="metric-card indigo-card"><div class="mc-label">Total Events</div><div class="mc-value" id="m-total">0</div></div>
-    <div class="metric-card orange-card"><div class="mc-label">Violations</div><div class="mc-value" id="m-violations">0</div></div>
-  </div>
-
 </main>
 
 <script>
 /* ── Firebase config (unchanged) ── */
-const firebaseConfig = {
+const firebaseConfig={
   apiKey:"AIzaSyC6r5kNnapVhrzPQ-vA_Xm6pZRm6HQ3N7U",
   authDomain:"traffic-sim-5a9ef.firebaseapp.com",
   databaseURL:"https://traffic-sim-5a9ef-default-rtdb.asia-southeast1.firebasedatabase.app",
@@ -276,606 +205,504 @@ const firebaseConfig = {
   appId:"1:511074874213:web:a6b727744263d6b9be278c"
 };
 
-/* ── App state ── */
-let db = null;
-let currentState = 'OFF';
-let currentMode  = 0;
-let startTime    = Date.now();
-let cycleCount   = 0;
-let tripsCompleted = 0;
-let totalWaitTime  = 0;
-let waitEvents     = 0;
-let violations     = 0;
-let metrics = { GREEN:0, YELLOW:0, RED:0, total:0 };
-const MAX_POINTS = 20;
-let lineData = { labels:[], green:[], yellow:[], red:[] };
+let db=null,currentState='OFF',currentMode=0;
+let startTime=Date.now(),cycleCount=0,violations=0;
+let metrics={GREEN:0,YELLOW:0,RED:0,total:0};
 
-/* ══════════════════════════════════
-   TOP-DOWN INTERSECTION CANVAS
-══════════════════════════════════ */
-const canvas = document.getElementById('gameCanvas');
-const ctx    = canvas.getContext('2d');
+/* ══ CANVAS ══ */
+const canvas=document.getElementById('gameCanvas');
+const ctx=canvas.getContext('2d');
 
-// World constants
-const IX = 0, IY = 0;       // intersection centre in world space
-const ROAD_W = 120;          // road width (world units)
+/* ══ MAP GEOMETRY ══
+   Fixed 900×600 world. Always fully visible. No camera follow.
+   Road network:
+     - Central cross (horizontal + vertical through IX,IY)
+     - Outer rectangular loop
+   Car is constrained to road pixels only.
+*/
+const MAP_W=900, MAP_H=600;
+const RW=50; // road half-width (pixels in world space)
+const IX=450, IY=300; // main intersection centre
 
-// Player car
-const car = {
-  x: 0, y: 420,            // start south of intersection
-  angle: -Math.PI / 2,     // facing north
-  speed: 0,
-  maxSpeed: 5,
-  accel: 0.13,
-  brakeForce: 0.22,
-  friction: 0.045,
-  turnRate: 0.034,
-  w: 28, h: 50,
-  color: '#2563eb',
-  roofColor: '#1d4ed8',
+// Outer ring coords
+const OTY=100, OBY=500, OLX=140, ORX=760;
+
+// Traffic light position & rules
+const TL_WX=IX+RW+12, TL_WY=IY+RW+12;
+const TL_ZONE=120;
+const STOP_WY=IY+RW+15;
+
+/* ── onRoad: check if world point is driveable ── */
+function onRoad(x,y){
+  if(x<0||x>MAP_W||y<0||y>MAP_H) return false;
+  // Centre cross
+  if(y>=IY-RW&&y<=IY+RW) return true;
+  if(x>=IX-RW&&x<=IX+RW) return true;
+  // Outer ring: top/bottom straights + left/right straights + corners
+  const onTop   =y>=OTY-RW&&y<=OTY+RW&&x>=OLX-RW&&x<=ORX+RW;
+  const onBottom=y>=OBY-RW&&y<=OBY+RW&&x>=OLX-RW&&x<=ORX+RW;
+  const onLeft  =x>=OLX-RW&&x<=OLX+RW&&y>=OTY-RW&&y<=OBY+RW;
+  const onRight =x>=ORX-RW&&x<=ORX+RW&&y>=OTY-RW&&y<=OBY+RW;
+  return onTop||onBottom||onLeft||onRight;
+}
+
+/* ── Scale world → canvas ── */
+let sX=1,sY=1,oX=0,oY=0;
+function computeScale(){
+  const s=Math.min(canvas.width/MAP_W,canvas.height/MAP_H);
+  sX=sY=s; oX=(canvas.width-MAP_W*s)/2; oY=(canvas.height-MAP_H*s)/2;
+}
+function resizeCanvas(){
+  const w=canvas.parentElement; canvas.width=w.clientWidth; canvas.height=w.clientHeight; computeScale();
+}
+const wx=x=>oX+x*sX, wy=y=>oY+y*sY;
+const ws=(x,y)=>({sx:wx(x),sy:wy(y)});
+const sz=v=>v*sX;
+
+/* ── Seeded decoration positions ── */
+function seed(n){let x=Math.sin(n)*99999;return x-Math.floor(x);}
+const TREES=[];
+for(let i=0;i<140;i++){
+  const tx=seed(i*3+1)*MAP_W, ty=seed(i*3+2)*MAP_H;
+  if(!onRoad(tx,ty)&&!onRoad(tx-10,ty)&&!onRoad(tx+10,ty)&&!onRoad(tx,ty-10)&&!onRoad(tx,ty+10)){
+    TREES.push({x:tx,y:ty,r:6+seed(i*3+3)*8,c:seed(i)>0.45?'#1a3d1a':'#14532d',d:seed(i+100)>0.5});
+  }
+}
+const BUILDINGS=[
+  {x:240,y:150,w:75,h:58,color:'#1a2640',roof:'#1e3a8a',label:'SCHOOL',lc:'#93c5fd'},
+  {x:590,y:145,w:90,h:65,color:'#14261a',roof:'#166534',label:'CITY MALL',lc:'#86efac'},
+  {x:590,y:375,w:65,h:52,color:'#26142a',roof:'#6d28d9',label:'',lc:'#c4b5fd'},
+  {x:245,y:370,w:62,h:48,color:'#302010',roof:'#9a3412',label:'GAS',lc:'#fdba74'},
+  {x:390,y:155,w:46,h:42,color:'#1a261a',roof:'#14532d',label:'',lc:''},
+  {x:390,y:390,w:46,h:40,color:'#261a1a',roof:'#7f1d1d',label:'BARN',lc:'#fca5a5'},
+];
+
+/* ── Player car ── */
+const car={
+  x:IX,y:IY+RW+70,
+  angle:-Math.PI/2, // facing north
+  speed:0,maxSpeed:3.6,
+  accel:0.09,brake:0.16,friction:0.033,turn:0.026,
+  w:16,h:30,
+  color:'#2563eb',roof:'#1d4ed8',
+  alpha:1,fadeTarget:1,
 };
 
-// Camera (tracks car)
-let camX = car.x, camY = car.y;
-let zoom  = 1.0;
+const keys={};
+window.addEventListener('keydown',e=>{keys[e.key]=true;['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key)&&e.preventDefault();});
+window.addEventListener('keyup',  e=>{keys[e.key]=false;});
 
-// Input
-const keys = {};
-window.addEventListener('keydown', e => { keys[e.key] = true;  e.preventDefault && ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key) && e.preventDefault(); });
-window.addEventListener('keyup',   e => { keys[e.key] = false; });
+let violationCooldown=0,flashTimer=null;
 
-// Violation state
-let violationCooldown = 0;
-let flashTimer = null;
+/* ══ CAR UPDATE ══ */
+function updateCar(){
+  const AK=keys['w']||keys['W']||keys['ArrowUp'];
+  const BK=keys['s']||keys['S']||keys['ArrowDown'];
+  const LK=keys['a']||keys['A']||keys['ArrowLeft'];
+  const RK=keys['d']||keys['D']||keys['ArrowRight'];
 
-// Stop line: cars approaching from south stop just before south edge of intersection
-const STOP_Y = IY + ROAD_W / 2 + 14;  // just south of intersection box
+  const dist=Math.hypot(car.x-TL_WX,car.y-TL_WY);
+  const near=dist<TL_ZONE;
+  const isG=currentState==='GREEN',isY=currentState==='YELLOW';
+  const isR=currentState==='RED',  isO=currentState==='OFF';
+  const isB=currentState==='BLINK';
+  const hN=car.angle>-Math.PI*.92&&car.angle<-Math.PI*.08;
+  const sApp=car.y>IY&&car.y<STOP_WY+50;
+  const halt=near&&(isR||isO)&&hN&&sApp;
+  const top=near?(isG?car.maxSpeed:isY?car.maxSpeed*.45:isB?car.maxSpeed*.3:0):car.maxSpeed;
 
-function resizeCanvas() {
-  const wrap = canvas.parentElement;
-  canvas.width  = wrap.clientWidth;
-  canvas.height = wrap.clientHeight;
-  zoom = Math.min(canvas.width, canvas.height) / 400;
-}
-
-/* ── world → screen ── */
-function ws(wx, wy) {
-  return {
-    sx: (wx - camX) * zoom + canvas.width  / 2,
-    sy: (wy - camY) * zoom + canvas.height / 2,
-  };
-}
-
-/* ── DRAW ROAD ── */
-function drawWorld() {
-  const W = canvas.width, H = canvas.height;
-  const z = zoom;
-
-  // ── Grass background
-  const grassGrad = ctx.createLinearGradient(0, 0, W, H);
-  grassGrad.addColorStop(0, '#4a9e4a');
-  grassGrad.addColorStop(1, '#3a7e3a');
-  ctx.fillStyle = grassGrad;
-  ctx.fillRect(0, 0, W, H);
-
-  // Small grass texture
-  ctx.fillStyle = 'rgba(0,0,0,0.055)';
-  for (let gx = -600; gx < 600; gx += 44) {
-    for (let gy = -600; gy < 600; gy += 44) {
-      const inRoad = (Math.abs(gx - IX) < ROAD_W/2 + 5) || (Math.abs(gy - IY) < ROAD_W/2 + 5);
-      if (!inRoad) {
-        const s = ws(gx, gy);
-        ctx.fillRect(s.sx, s.sy, 2, 2);
+  if(AK){
+    if(halt&&car.y<=STOP_WY+2){
+      car.speed=0;car.y=Math.max(car.y,STOP_WY+2);
+      if(violationCooldown<=0){
+        violations++;document.getElementById('violationCount').textContent=violations;
+        violationCooldown=160;
+        const fl=document.getElementById('violationFlash');
+        fl.classList.add('on');clearTimeout(flashTimer);
+        flashTimer=setTimeout(()=>fl.classList.remove('on'),600);
+        addLog('Red light violation!','red');
       }
-    }
+    } else { car.speed=Math.min(car.speed+car.accel,top); }
+  } else if(BK){
+    car.speed=Math.max(car.speed-car.brake,0);
+  } else {
+    const slow=near&&(isY||(halt&&car.y<STOP_WY+50));
+    car.speed=Math.max(car.speed-(slow?car.friction*3:car.friction),0);
   }
 
-  // ── Road surfaces
-  // Vertical road (N-S)
-  const vRoadTL = ws(IX - ROAD_W/2, -800);
-  ctx.fillStyle = '#6b6b6b';
-  ctx.fillRect(vRoadTL.sx, vRoadTL.sy, ROAD_W*z, 1600*z);
-
-  // Horizontal road (E-W)
-  const hRoadTL = ws(-800, IY - ROAD_W/2);
-  ctx.fillRect(hRoadTL.sx, hRoadTL.sy, 1600*z, ROAD_W*z);
-
-  // Intersection box (slightly lighter)
-  const intTL = ws(IX - ROAD_W/2, IY - ROAD_W/2);
-  ctx.fillStyle = '#787878';
-  ctx.fillRect(intTL.sx, intTL.sy, ROAD_W*z, ROAD_W*z);
-
-  // ── Road edge lines (white)
-  ctx.strokeStyle = '#e0e0e0';
-  ctx.lineWidth = 2.5 * z;
-  ctx.setLineDash([]);
-
-  // Vertical road edges
-  [[IX - ROAD_W/2, -800, IX - ROAD_W/2, IY - ROAD_W/2],
-   [IX + ROAD_W/2, -800, IX + ROAD_W/2, IY - ROAD_W/2],
-   [IX - ROAD_W/2, IY + ROAD_W/2, IX - ROAD_W/2, 800],
-   [IX + ROAD_W/2, IY + ROAD_W/2, IX + ROAD_W/2, 800],
-  ].forEach(([x1,y1,x2,y2]) => {
-    const a = ws(x1,y1), b = ws(x2,y2);
-    ctx.beginPath(); ctx.moveTo(a.sx,a.sy); ctx.lineTo(b.sx,b.sy); ctx.stroke();
-  });
-
-  // Horizontal road edges
-  [[-800, IY - ROAD_W/2, IX - ROAD_W/2, IY - ROAD_W/2],
-   [-800, IY + ROAD_W/2, IX - ROAD_W/2, IY + ROAD_W/2],
-   [IX + ROAD_W/2, IY - ROAD_W/2, 800, IY - ROAD_W/2],
-   [IX + ROAD_W/2, IY + ROAD_W/2, 800, IY + ROAD_W/2],
-  ].forEach(([x1,y1,x2,y2]) => {
-    const a = ws(x1,y1), b = ws(x2,y2);
-    ctx.beginPath(); ctx.moveTo(a.sx,a.sy); ctx.lineTo(b.sx,b.sy); ctx.stroke();
-  });
-
-  // ── Centre dashes (yellow)
-  ctx.strokeStyle = '#facc15';
-  ctx.lineWidth = 2 * z;
-  ctx.setLineDash([20*z, 16*z]);
-
-  // Vertical centre
-  [[IX, -800, IX, IY - ROAD_W/2],
-   [IX, IY + ROAD_W/2, IX, 800]].forEach(([x1,y1,x2,y2]) => {
-    const a = ws(x1,y1), b = ws(x2,y2);
-    ctx.beginPath(); ctx.moveTo(a.sx,a.sy); ctx.lineTo(b.sx,b.sy); ctx.stroke();
-  });
-
-  // Horizontal centre
-  [[-800, IY, IX - ROAD_W/2, IY],
-   [IX + ROAD_W/2, IY, 800, IY]].forEach(([x1,y1,x2,y2]) => {
-    const a = ws(x1,y1), b = ws(x2,y2);
-    ctx.beginPath(); ctx.moveTo(a.sx,a.sy); ctx.lineTo(b.sx,b.sy); ctx.stroke();
-  });
-  ctx.setLineDash([]);
-
-  // ── Crosswalks (all 4 sides)
-  const cwSize = 20, cwStripes = 5, cwGap = 5;
-  const cwSpan = cwStripes * cwSize + (cwStripes-1) * cwGap;
-  ctx.fillStyle = 'rgba(255,255,255,0.72)';
-
-  // South crosswalk (player side)
-  for (let i = 0; i < cwStripes; i++) {
-    const off = -cwSpan/2 + i*(cwSize+cwGap);
-    const s = ws(IX + off, IY + ROAD_W/2);
-    ctx.fillRect(s.sx, s.sy, cwSize*z, 22*z);
-  }
-  // North crosswalk
-  for (let i = 0; i < cwStripes; i++) {
-    const off = -cwSpan/2 + i*(cwSize+cwGap);
-    const s = ws(IX + off, IY - ROAD_W/2 - 22);
-    ctx.fillRect(s.sx, s.sy, cwSize*z, 22*z);
-  }
-  // West crosswalk
-  for (let i = 0; i < cwStripes; i++) {
-    const off = -cwSpan/2 + i*(cwSize+cwGap);
-    const s = ws(IX - ROAD_W/2 - 22, IY + off);
-    ctx.fillRect(s.sx, s.sy, 22*z, cwSize*z);
-  }
-  // East crosswalk
-  for (let i = 0; i < cwStripes; i++) {
-    const off = -cwSpan/2 + i*(cwSize+cwGap);
-    const s = ws(IX + ROAD_W/2, IY + off);
-    ctx.fillRect(s.sx, s.sy, 22*z, cwSize*z);
+  if(car.speed>0.1){
+    const t=car.turn*(car.speed/car.maxSpeed);
+    if(LK)car.angle-=t; if(RK)car.angle+=t;
   }
 
-  // ── STOP LINE — south approach, left lane (player's lane going north)
-  const slStart = ws(IX - ROAD_W/2, STOP_Y);
-  const slEnd   = ws(IX, STOP_Y);
-  ctx.strokeStyle = '#ffffff';
-  ctx.lineWidth   = 5 * z;
-  ctx.beginPath();
-  ctx.moveTo(slStart.sx, slStart.sy);
-  ctx.lineTo(slEnd.sx,   slEnd.sy);
-  ctx.stroke();
+  const nx=car.x+Math.cos(car.angle)*car.speed;
+  const ny=car.y+Math.sin(car.angle)*car.speed;
 
-  // ── STOP text
-  ctx.save();
-  const stxt = ws(IX - ROAD_W/4, STOP_Y + 10);
-  ctx.translate(stxt.sx, stxt.sy);
-  ctx.fillStyle = 'rgba(255,255,255,0.55)';
-  ctx.font = `bold ${Math.round(9*z)}px DM Sans, sans-serif`;
-  ctx.textAlign = 'center';
-  ctx.fillText('STOP', 0, 0);
-  ctx.restore();
+  // Road constraint — try each axis independently
+  const moved=onRoad(nx,ny);
+  const slideX=!moved&&onRoad(nx,car.y);
+  const slideY=!moved&&!slideX&&onRoad(car.x,ny);
+  if(moved){car.x=nx;car.y=ny;}
+  else if(slideX){car.x=nx;car.speed*=0.7;}
+  else if(slideY){car.y=ny;car.speed*=0.7;}
+  else{car.speed*=0.4;}
+
+  // Smooth fade at map edges (hide wrap seam)
+  const edgeDist=Math.min(car.x,MAP_W-car.x,car.y,MAP_H-car.y);
+  car.fadeTarget=edgeDist<70?Math.max(0,edgeDist/70):1;
+  car.alpha+=(car.fadeTarget-car.alpha)*0.14;
+
+  // Wrap (car goes off one edge → appears on the opposite road)
+  const M=35;
+  if(car.x<-M)car.x=MAP_W+M-4;
+  else if(car.x>MAP_W+M)car.x=-M+4;
+  if(car.y<-M)car.y=MAP_H+M-4;
+  else if(car.y>MAP_H+M)car.y=-M+4;
+
+  if(violationCooldown>0)violationCooldown--;
+
+  // HUD
+  const kmh=Math.round(car.speed/car.maxSpeed*65);
+  document.getElementById('speedLabel').textContent=kmh+' km/h';
+  document.getElementById('speedBar').style.width=(car.speed/car.maxSpeed*100)+'%';
+  document.getElementById('speedBar').style.background=halt?'#ef4444':isY&&near?'#f59e0b':'#22c55e';
+  const ds=document.getElementById('driveStatus');
+  if(halt&&car.speed<0.05){ds.textContent='🔴 Stopped at Red';ds.style.color='var(--red)';}
+  else if(isY&&car.speed>0&&near){ds.textContent='🟡 Slowing';ds.style.color='var(--yellow)';}
+  else if(isG&&car.speed>0){ds.textContent='🟢 Moving';ds.style.color='var(--green)';}
+  else if(car.speed<0.05){ds.textContent='Stopped';ds.style.color='var(--muted)';}
+  else{ds.textContent='Driving';ds.style.color='var(--muted)';}
 }
 
-/* ── TRAFFIC LIGHT POLE (SE corner of intersection) ── */
-function drawTrafficLight() {
-  const z = zoom;
-  // Pole sits SE corner, arm extends west over south approach lane
-  const poleWX = IX + ROAD_W/2 + 12;
-  const poleWY = IY + ROAD_W/2 + 12;
-  const p = ws(poleWX, poleWY);
+/* ══ DRAW WORLD ══ */
+function drawWorld(){
+  const W=canvas.width,H=canvas.height;
 
-  // Base plate
-  ctx.fillStyle = '#374151';
-  ctx.beginPath(); ctx.roundRect(p.sx - 5*z, p.sy - 5*z, 10*z, 10*z, 2*z); ctx.fill();
+  /* Background */
+  const bg=ctx.createLinearGradient(0,0,W,H);
+  bg.addColorStop(0,'#0c1a0c');bg.addColorStop(1,'#091209');
+  ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
 
-  // Vertical shaft
-  const shaftH = 44*z;
-  ctx.fillStyle = '#4b5563';
-  ctx.fillRect(p.sx - 3*z, p.sy - shaftH, 6*z, shaftH);
+  /* Map frame */
+  ctx.strokeStyle='rgba(255,255,255,0.05)';ctx.lineWidth=1;
+  ctx.strokeRect(oX,oY,MAP_W*sX,MAP_H*sY);
 
-  // Horizontal arm going west (over road)
-  const armLen = 42*z;
-  ctx.fillStyle = '#4b5563';
-  ctx.fillRect(p.sx - armLen - 3*z, p.sy - shaftH + 2*z, armLen, 4*z);
+  /* Lake */
+  {const lp=ws(195,215);
+  const lg=ctx.createRadialGradient(lp.sx,lp.sy,0,lp.sx,lp.sy,sz(50));
+  lg.addColorStop(0,'#1a3a55');lg.addColorStop(1,'#0a1e2e');
+  ctx.fillStyle=lg;ctx.beginPath();ctx.ellipse(lp.sx,lp.sy,sz(50),sz(32),-0.25,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='#1a3a55';ctx.lineWidth=sz(1.2);ctx.stroke();
+  ctx.fillStyle='rgba(255,255,255,0.1)';
+  ctx.fillRect(lp.sx-sz(14),lp.sy-sz(5),sz(9),sz(2));
+  ctx.fillRect(lp.sx+sz(5),lp.sy+sz(4),sz(6),sz(1.5));}
 
-  // Housing box (hangs from end of arm)
-  const hx = p.sx - armLen - 3*z - 2*z;
-  const hy = p.sy - shaftH - 2*z;
-  const hw = 16*z, hh = 42*z;
+  /* Football pitch */
+  {const fp=ws(630,195);
+  ctx.fillStyle='#0a220a';ctx.fillRect(fp.sx-sz(36),fp.sy-sz(22),sz(72),sz(44));
+  for(let i=0;i<4;i++){ctx.fillStyle=i%2===0?'rgba(255,255,255,0.03)':'rgba(0,0,0,0)';ctx.fillRect(fp.sx-sz(36)+i*sz(18),fp.sy-sz(22),sz(18),sz(44));}
+  ctx.strokeStyle='rgba(255,255,255,0.25)';ctx.lineWidth=sz(1);
+  ctx.strokeRect(fp.sx-sz(32),fp.sy-sz(18),sz(64),sz(36));
+  ctx.beginPath();ctx.arc(fp.sx,fp.sy,sz(7),0,Math.PI*2);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(fp.sx,fp.sy-sz(18));ctx.lineTo(fp.sx,fp.sy+sz(18));ctx.stroke();}
 
-  // Drop cable
-  ctx.fillStyle = '#374151';
-  ctx.fillRect(hx + hw/2 - 1.5*z, p.sy - shaftH + 6*z, 3*z, hy - (p.sy - shaftH + 6*z));
+  /* Tents */
+  [[632,390],[655,408],[614,406]].forEach(([tx,ty],i)=>{
+    const tp=ws(tx,ty);
+    ctx.fillStyle=['#4a0f0f','#4a2e0f','#0f204a'][i];
+    ctx.beginPath();ctx.moveTo(tp.sx,tp.sy-sz(10));ctx.lineTo(tp.sx-sz(10),tp.sy+sz(3));ctx.lineTo(tp.sx+sz(10),tp.sy+sz(3));ctx.closePath();ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,0.07)';ctx.fillRect(tp.sx-sz(7),tp.sy+sz(3),sz(14),sz(5));});
 
-  ctx.fillStyle = '#1f2937';
-  ctx.beginPath(); ctx.roundRect(hx, hy, hw, hh, 3*z); ctx.fill();
-  ctx.strokeStyle = '#374151'; ctx.lineWidth = 1.5*z; ctx.stroke();
+  /* Ferris wheel */
+  {const fp=ws(665,405);const fr=sz(26);const t=Date.now()/2200;
+  ctx.strokeStyle='#2d3748';ctx.lineWidth=sz(2.5);
+  ctx.beginPath();ctx.moveTo(fp.sx-fr*.5,fp.sy+fr);ctx.lineTo(fp.sx,fp.sy);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(fp.sx+fr*.5,fp.sy+fr);ctx.lineTo(fp.sx,fp.sy);ctx.stroke();
+  ctx.strokeStyle='#374151';ctx.lineWidth=sz(2.5);
+  ctx.beginPath();ctx.arc(fp.sx,fp.sy,fr,0,Math.PI*2);ctx.stroke();
+  for(let s=0;s<6;s++){const a=t+s*Math.PI/3;
+    ctx.strokeStyle='rgba(255,255,255,0.1)';ctx.lineWidth=sz(1);
+    ctx.beginPath();ctx.moveTo(fp.sx,fp.sy);ctx.lineTo(fp.sx+Math.cos(a)*fr,fp.sy+Math.sin(a)*fr);ctx.stroke();
+    ctx.fillStyle=['#4a0f0f','#0f204a','#0f3020','#4a2e0f','#2a0f4a','#4a0f30'][s];
+    ctx.beginPath();ctx.arc(fp.sx+Math.cos(a)*fr,fp.sy+Math.sin(a)*fr,sz(3.5),0,Math.PI*2);ctx.fill();}
+  ctx.fillStyle='#1f2937';ctx.beginPath();ctx.arc(fp.sx,fp.sy,sz(4),0,Math.PI*2);ctx.fill();}
 
-  // Bulb colours based on state
-  const blinkOff = currentState === 'BLINK' && Math.floor(Date.now() / 380) % 2 === 0;
-  const COLS = {
-    OFF:    ['#330000','#221100','#001100'],
-    RED:    ['#ef4444','#221100','#001100'],
-    YELLOW: ['#330000','#f59e0b','#001100'],
-    GREEN:  ['#330000','#221100','#22c55e'],
-    BLINK:  ['#ef4444','#f59e0b','#22c55e'],
-  };
-  const GLOWS = {
-    RED:    ['rgba(239,68,68,.9)',null,null],
-    YELLOW: [null,'rgba(245,158,11,.9)',null],
-    GREEN:  [null,null,'rgba(34,197,94,.9)'],
-    BLINK:  ['rgba(239,68,68,.6)','rgba(245,158,11,.6)','rgba(34,197,94,.6)'],
-    OFF:    [null,null,null],
-  };
-  const cols = blinkOff ? COLS.OFF  : (COLS[currentState]  || COLS.OFF);
-  const gls  = blinkOff ? GLOWS.OFF : (GLOWS[currentState] || GLOWS.OFF);
+  /* Windmill */
+  {const wp=ws(375,175);const wt=Date.now()/900;
+  ctx.fillStyle='#2d3748';ctx.beginPath();ctx.moveTo(wp.sx-sz(4),wp.sy+sz(20));ctx.lineTo(wp.sx+sz(4),wp.sy+sz(20));ctx.lineTo(wp.sx+sz(2.5),wp.sy);ctx.lineTo(wp.sx-sz(2.5),wp.sy);ctx.closePath();ctx.fill();
+  ctx.strokeStyle='#4b5563';ctx.lineWidth=sz(1.8);
+  for(let b=0;b<4;b++){const a=wt+b*Math.PI/2;
+    ctx.beginPath();ctx.moveTo(wp.sx,wp.sy);ctx.lineTo(wp.sx+Math.cos(a)*sz(14),wp.sy+Math.sin(a)*sz(14));ctx.stroke();
+    ctx.fillStyle='rgba(255,255,255,0.1)';
+    ctx.beginPath();ctx.ellipse(wp.sx+Math.cos(a)*sz(9),wp.sy+Math.sin(a)*sz(9),sz(3.5),sz(1.8),a,0,Math.PI*2);ctx.fill();}
+  ctx.fillStyle='#6b7280';ctx.beginPath();ctx.arc(wp.sx,wp.sy,sz(2.5),0,Math.PI*2);ctx.fill();}
 
-  const bR = 4.5 * z;
-  const bPositions = [hy + 8*z, hy + 21*z, hy + 34*z];
+  /* Balloon */
+  {const bx=200+Math.sin(Date.now()/3000)*14,by=155+Math.sin(Date.now()/2100)*9;
+  const bp=ws(bx,by);
+  const bg2=ctx.createRadialGradient(bp.sx-sz(3),bp.sy-sz(5),sz(1),bp.sx,bp.sy,sz(16));
+  bg2.addColorStop(0,'#3b0764');bg2.addColorStop(1,'#1e1040');
+  ctx.fillStyle=bg2;ctx.beginPath();ctx.ellipse(bp.sx,bp.sy,sz(12),sz(16),0,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='rgba(139,92,246,0.3)';ctx.lineWidth=sz(1);ctx.stroke();
+  for(let s=-2;s<=2;s++){ctx.strokeStyle='rgba(255,255,255,0.07)';ctx.lineWidth=sz(.8);ctx.beginPath();ctx.moveTo(bp.sx+s*sz(3),bp.sy-sz(16));ctx.lineTo(bp.sx+s*sz(2.5),bp.sy+sz(16));ctx.stroke();}
+  ctx.fillStyle='#4a2206';ctx.fillRect(bp.sx-sz(4),bp.sy+sz(17),sz(8),sz(6));}
 
-  bPositions.forEach((by, i) => {
-    const bx = hx + hw/2;
-    if (gls[i]) { ctx.shadowColor = gls[i]; ctx.shadowBlur = 16*z; }
-    ctx.fillStyle = cols[i];
-    ctx.beginPath(); ctx.arc(bx, by, bR, 0, Math.PI*2); ctx.fill();
-    ctx.shadowBlur = 0;
-    if (!['#330000','#221100','#001100'].includes(cols[i])) {
-      ctx.fillStyle = 'rgba(255,255,255,.32)';
-      ctx.beginPath(); ctx.arc(bx - bR*.28, by - bR*.28, bR*.3, 0, Math.PI*2); ctx.fill();
-    }
-  });
+  /* Mountains */
+  [[380,55,55,20,'#142014'],[450,48,45,16,'#0f280f'],[310,60,50,18,'#101e10']].forEach(([mx,my,mw,mh,mc])=>{
+    const mp=ws(mx,my);ctx.fillStyle=mc;
+    ctx.beginPath();ctx.moveTo(mp.sx-sz(mw),mp.sy+sz(mh));ctx.lineTo(mp.sx,mp.sy-sz(mh*1.3));ctx.lineTo(mp.sx+sz(mw),mp.sy+sz(mh));ctx.closePath();ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,0.07)';
+    ctx.beginPath();ctx.moveTo(mp.sx-sz(mw*.14),mp.sy-sz(mh*.82));ctx.lineTo(mp.sx,mp.sy-sz(mh*1.3));ctx.lineTo(mp.sx+sz(mw*.14),mp.sy-sz(mh*.82));ctx.closePath();ctx.fill();});
 
-  // State label above housing
-  const stateColor = { GREEN:'#22c55e', RED:'#ef4444', YELLOW:'#f59e0b', BLINK:'#f59e0b', OFF:'rgba(255,255,255,.4)' };
-  ctx.fillStyle = stateColor[currentState] || 'rgba(255,255,255,.4)';
-  ctx.font = `600 ${Math.round(8*z)}px DM Sans, sans-serif`;
-  ctx.textAlign = 'center';
-  ctx.fillText(currentState === 'OFF' ? 'OFFLINE' : currentState, hx + hw/2, hy - 5*z);
-  ctx.textAlign = 'left';
+  /* Clouds */
+  [[190,52],[460,42],[710,56]].forEach(([cx,cy],i)=>{
+    const d=Math.sin(Date.now()/4000+i)*9,cp=ws(cx+d,cy);
+    ctx.fillStyle='rgba(255,255,255,0.05)';
+    [[0,0,13],[11,-3,10],[22,0,11],[-7,-3,8]].forEach(([ox,oy,r])=>{ctx.beginPath();ctx.arc(cp.sx+sz(ox),cp.sy+sz(oy),sz(r),0,Math.PI*2);ctx.fill();});});
+
+  /* Trees */
+  TREES.forEach(tr=>{
+    const tp=ws(tr.x,tr.y);
+    if(tp.sx<oX-20||tp.sx>oX+MAP_W*sX+20||tp.sy<oY-20||tp.sy>oY+MAP_H*sY+20)return;
+    ctx.fillStyle='#2d1506';ctx.fillRect(tp.sx-sz(1.2),tp.sy,sz(2.4),sz(5));
+    ctx.fillStyle=tr.c;ctx.beginPath();ctx.arc(tp.sx,tp.sy,sz(tr.r),0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='rgba(0,0,0,0.22)';ctx.beginPath();ctx.arc(tp.sx+sz(2),tp.sy+sz(2),sz(tr.r*.55),0,Math.PI*2);ctx.fill();});
+
+  /* Buildings */
+  BUILDINGS.forEach(b=>{
+    const bp=ws(b.x,b.y);
+    ctx.fillStyle='rgba(0,0,0,0.35)';ctx.fillRect(bp.sx+sz(3),bp.sy+sz(3),sz(b.w),sz(b.h));
+    ctx.fillStyle=b.color;ctx.beginPath();ctx.roundRect(bp.sx,bp.sy,sz(b.w),sz(b.h),sz(3));ctx.fill();
+    ctx.fillStyle=b.roof;ctx.beginPath();ctx.roundRect(bp.sx,bp.sy,sz(b.w),sz(11),[sz(3),sz(3),0,0]);ctx.fill();
+    ctx.fillStyle='rgba(255,255,180,0.12)';
+    for(let rr=0;rr<2;rr++)for(let cc=0;cc<3;cc++)ctx.fillRect(bp.sx+sz(5+cc*14),bp.sy+sz(15+rr*12),sz(7),sz(6));
+    if(b.label){ctx.fillStyle=b.lc;ctx.font=`600 ${sz(6.5)}px DM Sans`;ctx.textAlign='center';ctx.fillText(b.label,bp.sx+sz(b.w*.5),bp.sy+sz(b.h*.56));}});
+  ctx.textAlign='left';
+
+  /* ══ ROADS ══ */
+  const RC='#181c22', RE='rgba(255,255,255,0.1)', DC='rgba(250,204,21,0.4)';
+
+  function rFill(x1,y1,x2,y2){const a=ws(x1,y1),b=ws(x2,y2);ctx.fillStyle=RC;ctx.fillRect(a.sx,a.sy,b.sx-a.sx,b.sy-a.sy);}
+  function rEdge(x1,y1,x2,y2){const a=ws(x1,y1),b=ws(x2,y2);ctx.strokeStyle=RE;ctx.lineWidth=sz(1.3);ctx.setLineDash([]);ctx.beginPath();ctx.moveTo(a.sx,a.sy);ctx.lineTo(b.sx,b.sy);ctx.stroke();}
+  function rDash(x1,y1,x2,y2){const a=ws(x1,y1),b=ws(x2,y2);ctx.strokeStyle=DC;ctx.lineWidth=sz(1);ctx.setLineDash([sz(12),sz(9)]);ctx.beginPath();ctx.moveTo(a.sx,a.sy);ctx.lineTo(b.sx,b.sy);ctx.stroke();ctx.setLineDash([]);}
+
+  // Outer ring
+  rFill(OLX-RW,OTY-RW,ORX+RW,OTY+RW); // top
+  rFill(OLX-RW,OBY-RW,ORX+RW,OBY+RW); // bottom
+  rFill(OLX-RW,OTY-RW,OLX+RW,OBY+RW); // left
+  rFill(ORX-RW,OTY-RW,ORX+RW,OBY+RW); // right
+
+  // Centre cross
+  rFill(0,IY-RW,MAP_W,IY+RW);
+  rFill(IX-RW,0,IX+RW,MAP_H);
+  rFill(IX-RW,IY-RW,IX+RW,IY+RW); // intersection box
+
+  // Road surface highlight
+  ctx.fillStyle='rgba(255,255,255,0.015)';
+  const ch1=ws(0,IY-3),ch2=ws(MAP_W,IY+3);ctx.fillRect(ch1.sx,ch1.sy,ch2.sx-ch1.sx,ch2.sy-ch1.sy);
+  const cv1=ws(IX-3,0),cv2=ws(IX+3,MAP_H);ctx.fillRect(cv1.sx,cv1.sy,cv2.sx-cv1.sx,cv2.sy-cv1.sy);
+
+  // Outer ring edges
+  rEdge(OLX+RW,OTY-RW,ORX-RW,OTY-RW);rEdge(OLX+RW,OTY+RW,ORX-RW,OTY+RW);
+  rEdge(OLX+RW,OBY-RW,ORX-RW,OBY-RW);rEdge(OLX+RW,OBY+RW,ORX-RW,OBY+RW);
+  rEdge(OLX-RW,OTY+RW,OLX-RW,OBY-RW);rEdge(OLX+RW,OTY+RW,OLX+RW,OBY-RW);
+  rEdge(ORX-RW,OTY+RW,ORX-RW,OBY-RW);rEdge(ORX+RW,OTY+RW,ORX+RW,OBY-RW);
+
+  // Centre cross edges
+  rEdge(0,IY-RW,IX-RW,IY-RW);rEdge(0,IY+RW,IX-RW,IY+RW);
+  rEdge(IX+RW,IY-RW,MAP_W,IY-RW);rEdge(IX+RW,IY+RW,MAP_W,IY+RW);
+  rEdge(IX-RW,0,IX-RW,IY-RW);rEdge(IX+RW,0,IX+RW,IY-RW);
+  rEdge(IX-RW,IY+RW,IX-RW,MAP_H);rEdge(IX+RW,IY+RW,IX+RW,MAP_H);
+
+  // Centre dashes
+  rDash(0,IY,IX-RW,IY);rDash(IX+RW,IY,MAP_W,IY);
+  rDash(IX,0,IX,IY-RW);rDash(IX,IY+RW,IX,MAP_H);
+  rDash(OLX,OTY,ORX,OTY);rDash(OLX,OBY,ORX,OBY);
+  rDash(OLX,OTY,OLX,OBY);rDash(ORX,OTY,ORX,OBY);
+
+  // Crosswalks at main intersection
+  const CWS=5,CWW=9,CWG=4,CWSP=CWS*(CWW+CWG)-CWG;
+  ctx.fillStyle='rgba(255,255,255,0.45)';
+  for(let i=0;i<CWS;i++){
+    const o=-CWSP/2+i*(CWW+CWG);
+    const s1=ws(IX+o,IY+RW);ctx.fillRect(s1.sx,s1.sy,sz(CWW),sz(12));
+    const s2=ws(IX+o,IY-RW-12);ctx.fillRect(s2.sx,s2.sy,sz(CWW),sz(12));
+    const s3=ws(IX-RW-12,IY+o);ctx.fillRect(s3.sx,s3.sy,sz(12),sz(CWW));
+    const s4=ws(IX+RW,IY+o);ctx.fillRect(s4.sx,s4.sy,sz(12),sz(CWW));}
+
+  // Stop line
+  {const sl1=ws(IX-RW,STOP_WY),sl2=ws(IX,STOP_WY);
+  ctx.strokeStyle='rgba(255,255,255,0.75)';ctx.lineWidth=sz(2.5);
+  ctx.beginPath();ctx.moveTo(sl1.sx,sl1.sy);ctx.lineTo(sl2.sx,sl2.sy);ctx.stroke();
+  const st=ws(IX-RW/2,STOP_WY+7);
+  ctx.fillStyle='rgba(255,255,255,0.35)';ctx.font=`600 ${sz(5.5)}px DM Sans`;ctx.textAlign='center';
+  ctx.fillText('STOP',st.sx,st.sy);ctx.textAlign='left';}
+
+  // Proximity zone
+  {const tlp=ws(TL_WX,TL_WY),nd=Math.hypot(car.x-TL_WX,car.y-TL_WY),nz=nd<TL_ZONE;
+  const rc=nz?(currentState==='RED'?'rgba(239,68,68,0.22)':currentState==='GREEN'?'rgba(34,197,94,0.22)':'rgba(245,158,11,0.22)'):'rgba(255,255,255,0.05)';
+  ctx.strokeStyle=rc;ctx.lineWidth=sz(1.3);ctx.setLineDash([sz(4),sz(3.5)]);
+  ctx.beginPath();ctx.arc(tlp.sx,tlp.sy,sz(TL_ZONE),0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);}
+
+  /* Edge vignette — softens the wrap seam */
+  const vg=ctx.createRadialGradient(canvas.width/2,canvas.height/2,Math.min(canvas.width,canvas.height)*.28,canvas.width/2,canvas.height/2,Math.max(canvas.width,canvas.height)*.78);
+  vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,0.72)');
+  ctx.fillStyle=vg;ctx.fillRect(0,0,canvas.width,canvas.height);
 }
 
-/* ── PLAYER CAR ── */
-function drawCar() {
-  const s = ws(car.x, car.y);
-  const z = zoom;
+/* ══ TRAFFIC LIGHT ══ */
+function drawTrafficLight(){
+  const p=ws(TL_WX,TL_WY);
+  ctx.fillStyle='#1a2030';ctx.beginPath();ctx.roundRect(p.sx-sz(3.5),p.sy-sz(3.5),sz(7),sz(7),sz(2));ctx.fill();
+  const sH=sz(38);
+  ctx.fillStyle='#2d3748';ctx.fillRect(p.sx-sz(2.2),p.sy-sH,sz(4.4),sH);
+  const armL=sz(36);
+  ctx.fillStyle='#2d3748';ctx.fillRect(p.sx-armL-sz(2),p.sy-sH+sz(1.5),armL,sz(3));
+  const hx=p.sx-armL-sz(4),hy=p.sy-sH-sz(2),hw=sz(14),hh=sz(38);
+  ctx.fillStyle='#0d1117';ctx.beginPath();ctx.roundRect(hx,hy,hw,hh,sz(2.5));ctx.fill();
+  ctx.strokeStyle='#2d3748';ctx.lineWidth=sz(1);ctx.stroke();
 
+  const blinkOff=currentState==='BLINK'&&Math.floor(Date.now()/380)%2===0;
+  const COLS={OFF:['#1a0000','#1a1000','#001500'],RED:['#ef4444','#1a1000','#001500'],YELLOW:['#1a0000','#f59e0b','#001500'],GREEN:['#1a0000','#1a1000','#22c55e'],BLINK:['#ef4444','#f59e0b','#22c55e']};
+  const GLOWS={RED:['rgba(239,68,68,.85)',null,null],YELLOW:[null,'rgba(245,158,11,.85)',null],GREEN:[null,null,'rgba(34,197,94,.85)'],BLINK:['rgba(239,68,68,.55)','rgba(245,158,11,.55)','rgba(34,197,94,.55)'],OFF:[null,null,null]};
+  const cols=blinkOff?COLS.OFF:(COLS[currentState]||COLS.OFF);
+  const gls =blinkOff?GLOWS.OFF:(GLOWS[currentState]||GLOWS.OFF);
+  const bR=sz(4);
+  [hy+sz(7.5),hy+sz(19),hy+sz(30.5)].forEach((by,i)=>{
+    const bx=hx+hw/2;
+    if(gls[i]){ctx.shadowColor=gls[i];ctx.shadowBlur=sz(12);}
+    ctx.fillStyle=cols[i];ctx.beginPath();ctx.arc(bx,by,bR,0,Math.PI*2);ctx.fill();
+    ctx.shadowBlur=0;
+    if(!['#1a0000','#1a1000','#001500'].includes(cols[i])){ctx.fillStyle='rgba(255,255,255,0.24)';ctx.beginPath();ctx.arc(bx-bR*.26,by-bR*.26,bR*.28,0,Math.PI*2);ctx.fill();}});
+
+  const sc={GREEN:'#4ade80',RED:'#f87171',YELLOW:'#fbbf24',BLINK:'#fbbf24',OFF:'rgba(255,255,255,.2)'};
+  ctx.fillStyle=sc[currentState]||'rgba(255,255,255,.2)';
+  ctx.font=`600 ${sz(6)}px DM Sans`;ctx.textAlign='center';
+  ctx.fillText(currentState==='OFF'?'OFF':currentState,hx+hw/2,hy-sz(3.5));
+  ctx.textAlign='left';
+}
+
+/* ══ DRAW CAR (clean, no wheel protrusions) ══ */
+function drawCar(){
+  const s=ws(car.x,car.y);
   ctx.save();
-  ctx.translate(s.sx, s.sy);
-  ctx.rotate(car.angle + Math.PI / 2); // +90° because car sprite faces up
+  ctx.globalAlpha=car.alpha;
+  ctx.translate(s.sx,s.sy);
+  ctx.rotate(car.angle+Math.PI/2);
+  const cw=sz(car.w),ch=sz(car.h);
 
-  const cw = car.w * z, ch = car.h * z;
-
-  // Drop shadow
-  ctx.fillStyle = 'rgba(0,0,0,0.22)';
-  ctx.beginPath();
-  ctx.ellipse(3*z, 4*z, cw*.42, ch*.32, 0, 0, Math.PI*2);
-  ctx.fill();
+  // Shadow
+  ctx.fillStyle='rgba(0,0,0,0.28)';ctx.beginPath();ctx.ellipse(sz(1.5),sz(2.5),cw*.44,ch*.24,0,0,Math.PI*2);ctx.fill();
 
   // Body
-  ctx.fillStyle = car.color;
-  ctx.beginPath(); ctx.roundRect(-cw/2, -ch/2, cw, ch, 5*z); ctx.fill();
+  ctx.fillStyle=car.color;ctx.beginPath();ctx.roundRect(-cw/2,-ch/2,cw,ch,sz(4.5));ctx.fill();
+  ctx.fillStyle='rgba(255,255,255,0.09)';ctx.beginPath();ctx.roundRect(-cw/2,-ch/2,cw,ch*.3,[sz(4.5),sz(4.5),0,0]);ctx.fill();
 
-  // Roof
-  ctx.fillStyle = car.roofColor;
-  ctx.beginPath(); ctx.roundRect(-cw*.32, -ch*.28, cw*.64, ch*.42, 3*z); ctx.fill();
+  // Cabin/roof
+  ctx.fillStyle=car.roof;ctx.beginPath();ctx.roundRect(-cw*.32,-ch*.2,cw*.64,ch*.35,sz(2.5));ctx.fill();
 
   // Windshield
-  ctx.fillStyle = 'rgba(186,228,255,.6)';
-  ctx.beginPath(); ctx.roundRect(-cw*.26, -ch*.26, cw*.52, ch*.18, 2*z); ctx.fill();
+  ctx.fillStyle='rgba(180,228,255,0.55)';ctx.beginPath();ctx.roundRect(-cw*.26,-ch*.18,cw*.52,ch*.13,sz(1.5));ctx.fill();
 
   // Rear window
-  ctx.fillStyle = 'rgba(186,228,255,.45)';
-  ctx.beginPath(); ctx.roundRect(-cw*.22, ch*.1, cw*.44, ch*.14, 2*z); ctx.fill();
+  ctx.fillStyle='rgba(180,228,255,0.42)';ctx.beginPath();ctx.roundRect(-cw*.22,ch*.07,cw*.44,ch*.1,sz(1.5));ctx.fill();
 
-  // Headlights (front)
-  ctx.fillStyle = '#fefce8';
-  ctx.shadowColor = 'rgba(255,245,150,.85)';
-  ctx.shadowBlur = 7*z;
-  ctx.fillRect(-cw*.4, -ch*.47, cw*.2, ch*.09);
-  ctx.fillRect( cw*.2, -ch*.47, cw*.2, ch*.09);
-  ctx.shadowBlur = 0;
+  // Headlights
+  ctx.fillStyle='#fefce8';ctx.shadowColor='rgba(255,245,130,.65)';ctx.shadowBlur=sz(5);
+  ctx.beginPath();ctx.roundRect(-cw*.41,-ch*.44,cw*.18,ch*.07,sz(1));ctx.fill();
+  ctx.beginPath();ctx.roundRect( cw*.23,-ch*.44,cw*.18,ch*.07,sz(1));ctx.fill();
+  ctx.shadowBlur=0;
 
   // Tail lights
-  const braking = car.speed < 0.5 && (keys['s']||keys['S']||keys['ArrowDown']);
-  ctx.fillStyle = braking ? '#ef4444' : '#991b1b';
-  if (braking) { ctx.shadowColor = 'rgba(239,68,68,.65)'; ctx.shadowBlur = 7*z; }
-  ctx.fillRect(-cw*.4,  ch*.38, cw*.2, ch*.09);
-  ctx.fillRect( cw*.2,  ch*.38, cw*.2, ch*.09);
-  ctx.shadowBlur = 0;
+  const braking=keys['s']||keys['S']||keys['ArrowDown'];
+  ctx.fillStyle=braking?'#ef4444':'#6b0f0f';
+  if(braking){ctx.shadowColor='rgba(239,68,68,.5)';ctx.shadowBlur=sz(5);}
+  ctx.beginPath();ctx.roundRect(-cw*.41,ch*.37,cw*.18,ch*.07,sz(1));ctx.fill();
+  ctx.beginPath();ctx.roundRect( cw*.23,ch*.37,cw*.18,ch*.07,sz(1));ctx.fill();
+  ctx.shadowBlur=0;
 
-  // Wheels (4 corners)
-  const ww = cw*.22, wh = ch*.2;
-  [[-cw*.42,-ch*.34],[cw*.2,-ch*.34],[-cw*.42,ch*.14],[cw*.2,ch*.14]].forEach(([wx,wy]) => {
-    ctx.fillStyle = '#111';
-    ctx.beginPath(); ctx.roundRect(wx,wy,ww,wh,2*z); ctx.fill();
-    ctx.fillStyle = '#555';
-    ctx.beginPath(); ctx.arc(wx+ww/2, wy+wh/2, ww*.28, 0, Math.PI*2); ctx.fill();
-  });
-
-  ctx.restore();
+  ctx.restore();ctx.globalAlpha=1;
 }
 
-/* ── UPDATE CAR PHYSICS ── */
-function updateCar() {
-  const accelKey = keys['w']||keys['W']||keys['ArrowUp'];
-  const brakeKey = keys['s']||keys['S']||keys['ArrowDown'];
-  const leftKey  = keys['a']||keys['A']||keys['ArrowLeft'];
-  const rightKey = keys['d']||keys['D']||keys['ArrowRight'];
-
-  // Determine speed cap from traffic state
-  const isGreen  = currentState === 'GREEN';
-  const isYellow = currentState === 'YELLOW';
-  const isRed    = currentState === 'RED';
-  const isOff    = currentState === 'OFF';
-  const isBlink  = currentState === 'BLINK';
-
-  // Is the car in the south approach lane and heading north toward the stop line?
-  const headingNorth   = car.angle > -Math.PI * 0.9 && car.angle < -Math.PI * 0.1;
-  const southApproach  = car.y > IY && car.y < STOP_Y + 40;
-  const atStopZone     = car.y > STOP_Y - 5 && car.y < STOP_Y + 50;
-  const mustHalt       = (isRed || isOff) && headingNorth && southApproach;
-
-  // Max speed based on state
-  let stateMax = isGreen ? car.maxSpeed : isYellow ? car.maxSpeed * 0.42 : isBlink ? car.maxSpeed * 0.28 : 0;
-
-  if (accelKey) {
-    if (mustHalt && car.y <= STOP_Y + 2) {
-      // At or past stop line on red — block and flag violation
-      car.speed = 0;
-      car.y = Math.max(car.y, STOP_Y + 2);
-      if (violationCooldown <= 0) {
-        violations++;
-        document.getElementById('violationCount').textContent = violations;
-        document.getElementById('m-violations').textContent   = violations;
-        violationCooldown = 150;
-        const fl = document.getElementById('violationFlash');
-        fl.classList.add('on');
-        clearTimeout(flashTimer);
-        flashTimer = setTimeout(() => fl.classList.remove('on'), 550);
-        addLog('Red light violation!', 'red');
-      }
-    } else {
-      car.speed = Math.min(car.speed + car.accel, stateMax);
-    }
-  } else if (brakeKey) {
-    car.speed = Math.max(car.speed - car.brakeForce, 0);
-  } else {
-    // Natural yellow/red deceleration when near stop zone
-    const autoSlow = (isYellow || (mustHalt && atStopZone));
-    car.speed = Math.max(car.speed - (autoSlow ? car.friction * 2.5 : car.friction), 0);
-  }
-
-  // Steering (scales with speed)
-  if (car.speed > 0.1) {
-    const turn = car.turnRate * (car.speed / car.maxSpeed);
-    if (leftKey)  car.angle -= turn;
-    if (rightKey) car.angle += turn;
-  }
-
-  // Move
-  car.x += Math.cos(car.angle) * car.speed;
-  car.y += Math.sin(car.angle) * car.speed;
-
-  // Soft world wrap (so you can drive around freely)
-  const LIMIT = 560;
-  if (car.y < IY - LIMIT) { car.y = IY + LIMIT; }
-  if (car.y > IY + LIMIT) { car.y = IY - LIMIT; tripsCompleted++; document.getElementById('m-vehicles').textContent = tripsCompleted; }
-  if (car.x < IX - LIMIT) { car.x = IX + LIMIT; }
-  if (car.x > IX + LIMIT) { car.x = IX - LIMIT; }
-
-  if (violationCooldown > 0) violationCooldown--;
-
-  // Smooth camera follow
-  camX += (car.x - camX) * 0.1;
-  camY += (car.y - camY) * 0.1;
-
-  // Update HUD
-  const kmh = Math.round(car.speed / car.maxSpeed * 65);
-  document.getElementById('speedLabel').textContent = kmh + ' km/h';
-  document.getElementById('speedBar').style.width      = (car.speed / car.maxSpeed * 100) + '%';
-  document.getElementById('speedBar').style.background = mustHalt ? '#ef4444' : isYellow ? '#f59e0b' : '#22c55e';
-
-  const ds = document.getElementById('driveStatus');
-  if (mustHalt && car.speed < 0.1)  { ds.textContent = '🔴 Stopped at Red'; ds.style.color = 'var(--red)'; }
-  else if (isYellow && car.speed>0) { ds.textContent = '🟡 Slowing'; ds.style.color = 'var(--yellow-dark)'; }
-  else if (isGreen && car.speed>0)  { ds.textContent = '🟢 Moving';  ds.style.color = 'var(--green-dark)'; }
-  else if (car.speed < 0.05)        { ds.textContent = 'Stopped'; ds.style.color = 'var(--muted)'; }
-  else                              { ds.textContent = 'Coasting'; ds.style.color = 'var(--muted)'; }
-}
-
-/* ── GAME LOOP ── */
-function gameLoop() {
-  resizeCanvas();
-  zoom = Math.min(canvas.width, canvas.height) / 400;
+/* ── Game loop ── */
+function gameLoop(){
+  resizeCanvas();computeScale();
   updateCar();
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  drawWorld();
-  drawTrafficLight();
-  drawCar();
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  drawWorld();drawTrafficLight();drawCar();
   requestAnimationFrame(gameLoop);
 }
 
-/* ══════════════════════════════════
-   CHARTS
-══════════════════════════════════ */
-let lineChart, donutChart;
-function initCharts() {
-  Chart.defaults.color = '#9ca3af';
-  Chart.defaults.borderColor = '#e5e7eb';
-  Chart.defaults.font.family = "'DM Sans',sans-serif";
-  Chart.defaults.font.size = 11;
-
-  const lCtx = document.getElementById('lineChart').getContext('2d');
-  lineChart = new Chart(lCtx, {
-    type:'line',
-    data:{ labels:lineData.labels, datasets:[
-      { label:'Green',  data:lineData.green,  borderColor:'#22c55e', backgroundColor:'rgba(34,197,94,.08)',  tension:.3, pointRadius:2, borderWidth:2 },
-      { label:'Yellow', data:lineData.yellow, borderColor:'#f59e0b', backgroundColor:'rgba(245,158,11,.08)', tension:.3, pointRadius:2, borderWidth:2 },
-      { label:'Red',    data:lineData.red,    borderColor:'#ef4444', backgroundColor:'rgba(239,68,68,.08)',  tension:.3, pointRadius:2, borderWidth:2 },
-    ]},
-    options:{ responsive:true, maintainAspectRatio:false, animation:false,
-      plugins:{ legend:{ labels:{ boxWidth:10, padding:12 } } },
-      scales:{ x:{ grid:{color:'#f3f4f6'}, ticks:{maxTicksLimit:6,font:{size:10}} }, y:{ grid:{color:'#f3f4f6'}, ticks:{stepSize:1,font:{size:10},beginAtZero:true} } }
-    }
-  });
-
-  const dCtx = document.getElementById('donutChart').getContext('2d');
-  donutChart = new Chart(dCtx, {
-    type:'doughnut',
-    data:{ labels:['Green','Yellow','Red'], datasets:[{ data:[1,1,1], backgroundColor:['rgba(34,197,94,.8)','rgba(245,158,11,.8)','rgba(239,68,68,.8)'], borderColor:['#22c55e','#f59e0b','#ef4444'], borderWidth:2 }] },
-    options:{ responsive:true, maintainAspectRatio:false, animation:false, cutout:'65%',
-      plugins:{ legend:{ position:'bottom', labels:{ boxWidth:8, padding:8, font:{size:10} } } }
-    }
-  });
-}
-function updateCharts() {
-  const now = new Date().toLocaleTimeString('en',{hour12:false,hour:'2-digit',minute:'2-digit',second:'2-digit'});
-  lineData.labels.push(now); lineData.green.push(metrics.GREEN); lineData.yellow.push(metrics.YELLOW); lineData.red.push(metrics.RED);
-  if (lineData.labels.length > MAX_POINTS) { lineData.labels.shift(); lineData.green.shift(); lineData.yellow.shift(); lineData.red.shift(); }
-  lineChart.update();
-  donutChart.data.datasets[0].data = [metrics.GREEN||0, metrics.YELLOW||0, metrics.RED||0];
-  donutChart.update();
-}
-
-/* ══════════════════════════════════
-   FIREBASE + COMMANDS (unchanged)
-══════════════════════════════════ */
-window.addEventListener('load', () => {
-  resizeCanvas();
-  window.addEventListener('resize', resizeCanvas);
-  initCharts();
-  setInterval(updateClock, 1000);
-  updateClock();
+/* ══ FIREBASE + COMMANDS (unchanged) ══ */
+window.addEventListener('load',()=>{
+  resizeCanvas();window.addEventListener('resize',resizeCanvas);
+  setInterval(updateClock,1000);updateClock();
   requestAnimationFrame(gameLoop);
-  addLog('System boot OK', 'green');
-  addLog('Sayre Hwy node online', 'blue');
-  addLog('Drive with W / ↑  +  A D', 'blue');
-
-  try {
-    const app = firebase.initializeApp(firebaseConfig);
-    db = firebase.database(app);
-    db.ref('/trafficLight').on('value', snap => {
-      const data = snap.val();
-      if (data) applyState(data.trafficLightState||'OFF', data.mode||0, data.countdown||0);
-    });
-    setFbStatus(true);
-    addLog('Firebase connected','green');
-  } catch(e) {
-    addLog('Firebase error: ' + e.message,'red');
-    setFbStatus(false);
-  }
+  addLog('System boot OK','green');addLog('Sayre Hwy node online','blue');addLog('Stay on road · W/↑ A/D','blue');
+  try{
+    const app=firebase.initializeApp(firebaseConfig);
+    db=firebase.database(app);
+    db.ref('/trafficLight').on('value',snap=>{const d=snap.val();if(d)applyState(d.trafficLightState||'OFF',d.mode||0,d.countdown||0);});
+    setFbStatus(true);addLog('Firebase connected','green');
+  }catch(e){addLog('Firebase error: '+e.message,'red');setFbStatus(false);}
 });
 
-function sendCommand(mode) {
-  currentMode = mode;
-  updateModeDisplay(mode);
-  if (db) { db.ref('/trafficLight/mode').set(mode); addLog(`Mode → ${['Off','Normal','Blink'][mode]}`, mode===1?'green':mode===2?'yellow':'red'); }
+function sendCommand(mode){
+  currentMode=mode;updateModeDisplay(mode);
+  if(db){db.ref('/trafficLight/mode').set(mode);addLog(`Mode → ${['Off','Normal','Blink'][mode]}`,mode===1?'green':mode===2?'yellow':'red');}
   else addLog('Not connected','red');
 }
 
-function applyState(state, mode, countdown) {
-  const prev = currentState;
-  currentState = state;
-  currentMode  = mode;
-  if (prev !== state) {
-    if (state !== 'OFF' && state !== 'BLINK') {
-      if (metrics[state] !== undefined) {
-        metrics[state]++; metrics.total++;
-        if (state==='GREEN' && prev==='RED') cycleCount++;
-        if (state==='RED') { waitEvents++; totalWaitTime += 5; }
-      }
-      updateCharts();
-    }
-    addLog(`State → ${state}`, state==='GREEN'?'green':state==='RED'?'red':state==='YELLOW'?'yellow':'blue');
+function applyState(state,mode,countdown){
+  const prev=currentState;currentState=state;currentMode=mode;
+  if(prev!==state){
+    if(state!=='OFF'&&state!=='BLINK'){if(metrics[state]!==undefined){metrics[state]++;metrics.total++;}if(state==='GREEN'&&prev==='RED')cycleCount++;}
+    addLog(`State → ${state}`,state==='GREEN'?'green':state==='RED'?'red':state==='YELLOW'?'yellow':'blue');
   }
-  updateLights(state);
-  updateCountdown(countdown, state);
-  updateModeDisplay(mode);
-  setEspStatus(state !== 'OFF');
-  document.getElementById('m-green').textContent  = metrics.GREEN;
-  document.getElementById('m-yellow').textContent = metrics.YELLOW;
-  document.getElementById('m-red').textContent    = metrics.RED;
-  document.getElementById('m-total').textContent  = metrics.total;
-  document.getElementById('cycleVal').textContent = cycleCount;
-  document.getElementById('prevVal').textContent  = prev!==state&&prev!=='OFF'?prev.slice(0,3):'---';
+  updateLights(state);updateCountdown(countdown,state);updateModeDisplay(mode);setEspStatus(state!=='OFF');
+  document.getElementById('cycleVal').textContent=cycleCount;
+  document.getElementById('prevVal').textContent=prev!==state&&prev!=='OFF'?prev.slice(0,3):'---';
 }
 
-function updateLights(state) {
-  const r=document.getElementById('bulbRed'), y=document.getElementById('bulbYellow'), g=document.getElementById('bulbGreen');
-  const lbl=document.getElementById('stateLabel');
-  r.className='tl-bulb'; y.className='tl-bulb'; g.className='tl-bulb'; lbl.className='state-badge';
-  if (state==='BLINK')       { r.classList.add('red-on','blink-anim'); y.classList.add('yellow-on','blink-anim'); g.classList.add('green-on','blink-anim'); lbl.textContent='⚡ Blink Mode'; lbl.classList.add('yellow'); }
-  else if (state==='RED')    { r.classList.add('red-on');    lbl.textContent='🔴 Stop';    lbl.classList.add('red'); }
-  else if (state==='YELLOW') { y.classList.add('yellow-on'); lbl.textContent='🟡 Caution'; lbl.classList.add('yellow'); }
-  else if (state==='GREEN')  { g.classList.add('green-on');  lbl.textContent='🟢 Go';      lbl.classList.add('green'); }
-  else { lbl.textContent='— Offline —'; }
+function updateLights(state){
+  const r=document.getElementById('bulbRed'),y=document.getElementById('bulbYellow'),g=document.getElementById('bulbGreen'),lbl=document.getElementById('stateLabel');
+  r.className='tl-bulb';y.className='tl-bulb';g.className='tl-bulb';lbl.className='state-badge';
+  if(state==='BLINK'){r.classList.add('red-on','blink-anim');y.classList.add('yellow-on','blink-anim');g.classList.add('green-on','blink-anim');lbl.textContent='⚡ Blink Mode';lbl.classList.add('yellow');}
+  else if(state==='RED'){r.classList.add('red-on');lbl.textContent='🔴 Stop';lbl.classList.add('red');}
+  else if(state==='YELLOW'){y.classList.add('yellow-on');lbl.textContent='🟡 Caution';lbl.classList.add('yellow');}
+  else if(state==='GREEN'){g.classList.add('green-on');lbl.textContent='🟢 Go';lbl.classList.add('green');}
+  else{lbl.textContent='— Offline —';}
 }
 
-function updateCountdown(secs, state) {
-  const num=document.getElementById('cdNum'), bar=document.getElementById('cdBar');
-  const maxSecs = state==='YELLOW'?2:5;
-  num.textContent = secs>0 ? String(secs).padStart(2,'0') : '--';
-  num.className = 'cd-num ' + (state||'').toLowerCase();
-  bar.style.width = maxSecs>0 ? Math.min(100,(secs/maxSecs)*100)+'%' : '0%';
-  bar.style.background = state==='GREEN'?'#22c55e':state==='YELLOW'?'#f59e0b':state==='RED'?'#ef4444':'#9ca3af';
+function updateCountdown(secs,state){
+  const num=document.getElementById('cdNum'),bar=document.getElementById('cdBar');
+  const mx=state==='YELLOW'?2:5;
+  num.textContent=secs>0?String(secs).padStart(2,'0'):'--';
+  num.className='cd-num '+(state||'').toLowerCase();
+  bar.style.width=mx>0?Math.min(100,(secs/mx)*100)+'%':'0%';
+  bar.style.background=state==='GREEN'?'#22c55e':state==='YELLOW'?'#f59e0b':state==='RED'?'#ef4444':'#4b5563';
 }
 
-function updateModeDisplay(mode) {
-  [0,1,2].forEach(m => {
-    const el = document.getElementById(`m${m}`);
-    if (el) el.classList.toggle('active', m === mode);
-  });
-  document.getElementById('modeVal').textContent = {0:'Off',1:'Normal',2:'Blink'}[mode]||'---';
+function updateModeDisplay(mode){
+  [0,1,2].forEach(m=>{const el=document.getElementById(`m${m}`);if(el)el.classList.toggle('active',m===mode);});
+  document.getElementById('modeVal').textContent={0:'Off',1:'Normal',2:'Blink'}[mode]||'---';
 }
 
-function setFbStatus(ok) {
-  document.getElementById('fbDot').className = 'status-dot' + (ok ? ' connected' : '');
-  document.getElementById('fbLabel').textContent = ok ? 'Firebase' : 'Offline';
-}
-function setEspStatus(ok) {
-  document.getElementById('espDot').className = 'status-dot' + (ok ? ' active' : '');
-  document.getElementById('espLabel').textContent = ok ? 'ESP32 On' : 'ESP32 Off';
+function setFbStatus(ok){document.getElementById('fbDot').className='status-dot'+(ok?' connected':'');document.getElementById('fbLabel').textContent=ok?'Firebase':'Offline';}
+function setEspStatus(ok){document.getElementById('espDot').className='status-dot'+(ok?' active':'');document.getElementById('espLabel').textContent=ok?'ESP32 On':'ESP32 Off';}
+
+function addLog(msg,cls=''){
+  const log=document.getElementById('eventLog');
+  const t=new Date().toLocaleTimeString('en',{hour12:false,hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  const e=document.createElement('div');e.className='log-entry';
+  e.innerHTML=`<span class="log-time">${t}</span><span class="log-msg ${cls}">${msg}</span>`;
+  log.prepend(e);while(log.children.length>10)log.removeChild(log.lastChild);
 }
 
-function addLog(msg, cls='') {
-  const log = document.getElementById('eventLog');
-  const t = new Date().toLocaleTimeString('en',{hour12:false,hour:'2-digit',minute:'2-digit',second:'2-digit'});
-  const e = document.createElement('div');
-  e.className = 'log-entry';
-  e.innerHTML = `<span class="log-time">${t}</span><span class="log-msg ${cls}">${msg}</span>`;
-  log.prepend(e);
-  while (log.children.length > 8) log.removeChild(log.lastChild);
-}
-
-function updateClock() {
-  document.getElementById('clockDisplay').textContent = new Date().toLocaleTimeString('en',{hour12:false});
-  const el = Math.floor((Date.now()-startTime)/1000);
-  document.getElementById('uptimeVal').textContent = String(Math.floor(el/60)).padStart(2,'0')+':'+String(el%60).padStart(2,'0');
+function updateClock(){
+  document.getElementById('clockDisplay').textContent=new Date().toLocaleTimeString('en',{hour12:false});
+  const el=Math.floor((Date.now()-startTime)/1000);
+  document.getElementById('uptimeVal').textContent=String(Math.floor(el/60)).padStart(2,'0')+':'+String(el%60).padStart(2,'0');
 }
 </script>
 </body>
