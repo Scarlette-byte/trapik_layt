@@ -338,26 +338,25 @@ function updateCar(){
   const nx=car.x+Math.cos(car.angle)*car.speed;
   const ny=car.y+Math.sin(car.angle)*car.speed;
 
-  // Road constraint — try each axis independently
-  const moved=onRoad(nx,ny);
-  const slideX=!moved&&onRoad(nx,car.y);
-  const slideY=!moved&&!slideX&&onRoad(car.x,ny);
-  if(moved){car.x=nx;car.y=ny;}
-  else if(slideX){car.x=nx;car.speed*=0.7;}
-  else if(slideY){car.y=ny;car.speed*=0.7;}
-  else{car.speed*=0.4;}
+  // Near a map edge? Skip road check so the car can exit and wrap
+  const atEdge=car.x<RW||car.x>MAP_W-RW||car.y<RW||car.y>MAP_H-RW;
+  if(atEdge){
+    car.x=nx; car.y=ny;
+  } else {
+    // Road constraint — slide along each axis without killing speed
+    if(onRoad(nx,ny)){car.x=nx;car.y=ny;}
+    else if(onRoad(nx,car.y)){car.x=nx;}
+    else if(onRoad(car.x,ny)){car.y=ny;}
+    // fully blocked: keep position, preserve speed
+  }
 
-  // Smooth fade at map edges (hide wrap seam)
-  const edgeDist=Math.min(car.x,MAP_W-car.x,car.y,MAP_H-car.y);
-  car.fadeTarget=edgeDist<70?Math.max(0,edgeDist/70):1;
-  car.alpha+=(car.fadeTarget-car.alpha)*0.14;
+  // Instant wrap
+  if(car.x<-5)car.x=MAP_W+5;
+  else if(car.x>MAP_W+5)car.x=-5;
+  if(car.y<-5)car.y=MAP_H+5;
+  else if(car.y>MAP_H+5)car.y=-5;
 
-  // Wrap (car goes off one edge → appears on the opposite road)
-  const M=35;
-  if(car.x<-M)car.x=MAP_W+M-4;
-  else if(car.x>MAP_W+M)car.x=-M+4;
-  if(car.y<-M)car.y=MAP_H+M-4;
-  else if(car.y>MAP_H+M)car.y=-M+4;
+  car.alpha=1;
 
   if(violationCooldown>0)violationCooldown--;
 
