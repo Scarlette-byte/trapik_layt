@@ -3,114 +3,248 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Traffic Light — IoT Dashboard</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<title>TrafficOS — Smart Intersection</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <style>
 :root{
-  --bg:#0f1117;--surface:#161b26;--surface2:#1c2233;
-  --border:#242d40;--text:#e2e8f0;--muted:#64748b;
-  --red:#ef4444;--red-dark:#b91c1c;
-  --green:#22c55e;--green-dark:#15803d;
-  --yellow:#f59e0b;--yellow-dark:#b45309;
-  --blue:#3b82f6;--blue-dark:#1d4ed8;
-  --shadow:0 2px 14px rgba(0,0,0,.6);
-  --radius:14px;--radius-sm:8px;
+  --bg:#eef0f5;
+  --neu-light:#ffffff;
+  --neu-dark:#c8ccd8;
+  --text:#2d3142;
+  --muted:#9ca3af;
+  --secondary:#6b7280;
+  --accent-blue:#3b6ff5;
+  --accent-red:#ef4444;
+  --accent-green:#22c55e;
+  --accent-yellow:#f59e0b;
+  --shadow-neu:6px 6px 14px var(--neu-dark),-6px -6px 14px var(--neu-light);
+  --shadow-sm:3px 3px 8px var(--neu-dark),-3px -3px 8px var(--neu-light);
+  --shadow-inset:inset 4px 4px 10px var(--neu-dark),inset -4px -4px 10px var(--neu-light);
+  --radius:18px;--radius-sm:12px;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.5;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
 
-header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow);position:sticky;top:0;z-index:100;}
-.logo{display:flex;align-items:center;gap:10px;font-weight:600;font-size:.95rem;}
-.logo-icon{width:30px;height:30px;background:#1d4ed8;border-radius:7px;display:grid;place-items:center;font-size:15px;}
-.logo-sub{font-size:.68rem;font-weight:400;color:var(--muted);display:block;line-height:1.1;}
+/* ── HEADER ── */
+header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px 32px;background:var(--bg);
+  box-shadow:0 4px 12px rgba(200,204,216,0.4);
+  position:sticky;top:0;z-index:100;
+}
+.logo{display:flex;align-items:center;gap:14px;}
+.logo-icon{
+  width:50px;height:50px;border-radius:14px;
+  background:var(--bg);box-shadow:var(--shadow-neu);
+  display:grid;place-items:center;font-size:22px;
+}
+.logo-text h1{
+  font-family:'Space Mono',monospace;font-size:20px;font-weight:700;
+  letter-spacing:-0.5px;color:var(--text);
+}
+.logo-text h1 span{color:var(--accent-blue);}
+.logo-text p{font-size:10px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-top:1px;}
 .header-right{display:flex;align-items:center;gap:12px;}
-.status-chip{display:flex;align-items:center;gap:6px;padding:4px 11px;border-radius:100px;font-size:.75rem;font-weight:500;background:var(--surface2);border:1px solid var(--border);}
-.status-dot{width:6px;height:6px;border-radius:50%;background:#374151;}
-.status-dot.connected{background:var(--green);box-shadow:0 0 0 2px rgba(34,197,94,.2);animation:pdot 2s infinite;}
-.status-dot.active{background:var(--blue);box-shadow:0 0 0 2px rgba(59,130,246,.2);animation:pdot 2s infinite;}
-@keyframes pdot{0%,100%{opacity:1}50%{opacity:.4}}
-.clock-chip{font-family:'DM Mono',monospace;font-size:.82rem;color:var(--muted);}
+.pill{
+  display:flex;align-items:center;gap:7px;padding:7px 16px;
+  border-radius:50px;background:var(--bg);box-shadow:var(--shadow-sm);
+  font-family:'Space Mono',monospace;font-size:11px;font-weight:700;
+  letter-spacing:1px;color:var(--secondary);
+}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--muted);}
+.dot.live{background:var(--accent-green);animation:pulse 2s infinite;}
+.dot.warn{background:var(--accent-yellow);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.55;transform:scale(.82)}}
+.clock-pill{
+  padding:7px 16px;border-radius:50px;background:var(--bg);
+  box-shadow:var(--shadow-sm);font-family:'Space Mono',monospace;
+  font-size:13px;font-weight:700;color:var(--text);letter-spacing:1px;
+}
 
-main{max-width:1420px;margin:0 auto;padding:16px 16px 36px;display:grid;grid-template-columns:220px 1fr 240px;gap:14px;}
+/* ── LAYOUT ── */
+main{
+  display:grid;
+  grid-template-columns:280px 1fr 300px;
+  gap:22px;padding:22px 32px 32px;
+  max-width:1440px;margin:0 auto;
+}
+.panel{
+  background:var(--bg);border-radius:var(--radius);
+  box-shadow:var(--shadow-neu);padding:22px;
+  display:flex;flex-direction:column;gap:18px;
+}
+.panel-label{
+  font-family:'Space Mono',monospace;font-size:10px;
+  letter-spacing:2px;text-transform:uppercase;color:var(--muted);
+  padding-bottom:10px;border-bottom:1px solid rgba(0,0,0,0.05);
+}
 
-.card{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden;}
-.card-header{padding:12px 14px 0;display:flex;align-items:center;justify-content:space-between;}
-.card-title{font-size:.68rem;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);}
-.card-body{padding:12px 14px 14px;}
+/* ── TRAFFIC LIGHT ── */
+.tl-wrap{display:flex;flex-direction:column;align-items:center;gap:12px;}
+.tl-housing{
+  width:82px;background:var(--bg);box-shadow:var(--shadow-neu);
+  border-radius:34px;padding:18px 14px;
+  display:flex;flex-direction:column;align-items:center;gap:12px;
+}
+.tl-slot{
+  width:48px;height:48px;border-radius:50%;
+  background:var(--bg);box-shadow:var(--shadow-inset);
+  display:grid;place-items:center;
+}
+.tl-bulb{
+  width:34px;height:34px;border-radius:50%;opacity:.18;
+  transition:opacity .3s,box-shadow .3s;
+}
+.tl-bulb.r{background:var(--accent-red);}
+.tl-bulb.y{background:var(--accent-yellow);}
+.tl-bulb.g{background:var(--accent-green);}
+.tl-bulb.on{opacity:1;}
+.tl-bulb.r.on{box-shadow:0 0 20px 6px rgba(239,68,68,.45);}
+.tl-bulb.y.on{box-shadow:0 0 20px 6px rgba(245,158,11,.45);}
+.tl-bulb.g.on{box-shadow:0 0 20px 6px rgba(34,197,94,.45);}
 
-/* Traffic light panel */
-.tl-panel{grid-column:1;grid-row:1;}
-.tl-housing{width:68px;margin:4px auto 14px;background:#0a0d14;border-radius:12px;padding:11px 9px;display:flex;flex-direction:column;gap:9px;align-items:center;box-shadow:0 8px 28px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.04);position:relative;}
-.tl-housing::after{content:'';position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);width:5px;height:18px;background:#2d3748;border-radius:0 0 3px 3px;}
-.tl-bulb{width:38px;height:38px;border-radius:50%;background:#141a26;transition:all .15s ease;position:relative;}
-.tl-bulb::after{content:'';position:absolute;inset:5px;border-radius:50%;background:radial-gradient(circle at 35% 35%,rgba(255,255,255,.12),transparent 60%);}
-.tl-bulb.red-on{background:var(--red);box-shadow:0 0 0 3px rgba(239,68,68,.18),0 0 22px rgba(239,68,68,.7);}
-.tl-bulb.yellow-on{background:var(--yellow);box-shadow:0 0 0 3px rgba(245,158,11,.18),0 0 22px rgba(245,158,11,.7);}
-.tl-bulb.green-on{background:var(--green);box-shadow:0 0 0 3px rgba(34,197,94,.18),0 0 22px rgba(34,197,94,.7);}
-.tl-bulb.blink-anim{animation:blink .4s step-end infinite;}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.07}}
-.state-badge{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:7px 10px;border-radius:100px;font-size:.84rem;font-weight:600;background:var(--surface2);color:var(--muted);width:100%;transition:all .2s;border:1px solid var(--border);}
-.state-badge.red{background:rgba(239,68,68,.1);color:var(--red);border-color:rgba(239,68,68,.25);}
-.state-badge.yellow{background:rgba(245,158,11,.1);color:var(--yellow);border-color:rgba(245,158,11,.25);}
-.state-badge.green{background:rgba(34,197,94,.1);color:var(--green);border-color:rgba(34,197,94,.25);}
-.cd-row{display:flex;align-items:center;justify-content:space-between;margin-top:11px;}
-.cd-label{font-size:.67rem;color:var(--muted);font-weight:500;}
-.cd-num{font-family:'DM Mono',monospace;font-size:1.8rem;font-weight:500;line-height:1;color:var(--text);transition:color .2s;}
-.cd-num.red{color:var(--red);}.cd-num.yellow{color:var(--yellow);}.cd-num.green{color:var(--green);}
-.progress-track{height:4px;background:var(--bg);border-radius:99px;overflow:hidden;margin-top:6px;}
-.progress-fill{height:100%;border-radius:99px;transition:width 1s linear,background .2s;}
-.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:11px;}
-.stat-item{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 10px;}
-.stat-key{font-size:.6rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:2px;}
-.stat-val{font-family:'DM Mono',monospace;font-size:.9rem;font-weight:500;color:var(--text);}
+/* phase badge */
+.phase-badge{
+  display:flex;align-items:center;justify-content:center;
+  width:100%;padding:8px 10px;border-radius:50px;
+  background:var(--bg);box-shadow:var(--shadow-sm);
+  font-family:'Space Mono',monospace;font-size:12px;font-weight:700;
+  letter-spacing:1.5px;color:var(--secondary);transition:color .3s;
+}
 
-/* Scene */
-.scene-panel{grid-column:2;grid-row:1;}
-.scene-wrap{position:relative;width:100%;height:520px;border-radius:var(--radius) var(--radius) 0 0;overflow:hidden;background:#0d1117;}
-#gameCanvas{display:block;width:100%;height:100%;}
-.cam-badge{position:absolute;top:10px;right:12px;font-size:.62rem;font-weight:700;color:#fff;background:rgba(239,68,68,.85);padding:3px 9px;border-radius:4px;letter-spacing:.05em;}
-.loc-tag{position:absolute;top:10px;left:12px;font-size:.68rem;color:rgba(255,255,255,.82);background:rgba(0,0,0,.55);padding:4px 10px;border-radius:6px;backdrop-filter:blur(4px);}
-.drive-hint{position:absolute;bottom:10px;right:12px;display:flex;gap:5px;align-items:center;background:rgba(0,0,0,.55);border-radius:7px;padding:5px 10px;backdrop-filter:blur(4px);}
-.key-badge{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:4px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);font-size:.6rem;font-weight:700;color:#fff;}
-.drive-hint span{font-size:.62rem;color:rgba(255,255,255,.62);}
-.violation-flash{position:absolute;inset:0;background:rgba(239,68,68,0);pointer-events:none;transition:background .1s;}
-.violation-flash.on{background:rgba(239,68,68,.2);}
-.scene-infobar{padding:9px 14px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;border-top:1px solid var(--border);background:var(--surface2);}
-.info-chip{display:flex;align-items:center;gap:6px;font-size:.73rem;color:var(--muted);font-weight:500;}
+/* timer ring */
+.ring-wrap{position:relative;width:90px;height:90px;}
+.ring-svg{transform:rotate(-90deg);}
+.ring-bg{fill:none;stroke:var(--neu-dark);stroke-width:6;}
+.ring-fg{fill:none;stroke:var(--accent-blue);stroke-width:6;stroke-linecap:round;transition:stroke-dashoffset 1s linear,stroke .3s;}
+.ring-center{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  font-family:'Space Mono',monospace;font-size:22px;font-weight:700;
+  color:var(--text);line-height:1;
+}
+.ring-center small{font-size:9px;color:var(--muted);letter-spacing:1px;font-weight:400;}
+
+/* stats */
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+.stat-card{
+  background:var(--bg);border-radius:var(--radius-sm);
+  box-shadow:var(--shadow-sm);padding:12px 10px;text-align:center;
+}
+.stat-val{font-family:'Space Mono',monospace;font-size:20px;font-weight:700;color:var(--text);line-height:1;}
+.stat-key{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-top:4px;font-weight:600;}
+
+/* event log */
+.log-box{
+  flex:1;background:var(--bg);border-radius:var(--radius-sm);
+  box-shadow:var(--shadow-inset);overflow:hidden;
+  display:flex;flex-direction:column;min-height:130px;
+}
+.log-head{
+  padding:9px 13px;font-family:'Space Mono',monospace;font-size:10px;
+  letter-spacing:2px;text-transform:uppercase;color:var(--muted);
+  border-bottom:1px solid rgba(0,0,0,.05);
+}
+.log-body{
+  flex:1;overflow-y:auto;padding:9px 13px;
+  font-family:'Space Mono',monospace;font-size:11px;
+  color:var(--secondary);display:flex;flex-direction:column;gap:3px;
+}
+.log-body::-webkit-scrollbar{width:3px;}
+.log-body::-webkit-scrollbar-thumb{background:var(--neu-dark);border-radius:2px;}
+.log-row{line-height:1.5;}
+.log-row .ts{color:var(--muted);margin-right:5px;}
+.log-row.red .tag{color:var(--accent-red);}
+.log-row.yellow .tag{color:var(--accent-yellow);}
+.log-row.green .tag{color:var(--accent-green);}
+.log-row.info .tag{color:var(--accent-blue);}
+
+/* ── CENTER ── */
+.center-panel{padding:18px;overflow:hidden;}
+.canvas-wrap{
+  position:relative;width:100%;height:480px;
+  border-radius:14px;overflow:hidden;
+  box-shadow:var(--shadow-inset);background:#1a1e2e;
+}
+#roadCanvas{display:block;width:100%;height:100%;}
+.cam-badge{
+  position:absolute;top:10px;right:12px;
+  font-size:.62rem;font-weight:700;color:#fff;
+  background:rgba(239,68,68,.85);padding:3px 9px;
+  border-radius:4px;letter-spacing:.06em;
+  font-family:'Space Mono',monospace;
+}
+.loc-tag{
+  position:absolute;top:10px;left:12px;
+  font-size:.68rem;color:rgba(255,255,255,.82);
+  background:rgba(0,0,0,.5);padding:4px 10px;
+  border-radius:6px;font-family:'DM Sans',sans-serif;
+}
+.infobar{
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  padding:10px 4px 0;
+}
+.info-chip{
+  display:flex;align-items:center;gap:6px;
+  font-size:.73rem;color:var(--secondary);font-weight:500;
+}
 .info-chip b{color:var(--text);}
-.speed-bar-track{width:70px;height:4px;background:var(--bg);border-radius:99px;overflow:hidden;}
-.speed-bar-fill{height:100%;background:var(--green);border-radius:99px;transition:width .1s,background .2s;}
+.info-chip.right{margin-left:auto;}
 
-/* Controls */
-.controls-panel{grid-column:3;grid-row:1;}
-.ctrl-btn{width:100%;padding:11px 14px;border:none;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:10px;transition:transform .07s,filter .1s;outline:none;}
-.ctrl-btn:hover{filter:brightness(1.12);}
-.ctrl-btn:active{transform:translateY(2px);}
-.btn-icon-wrap{width:26px;height:26px;border-radius:6px;background:rgba(255,255,255,.16);display:grid;place-items:center;font-size:12px;flex-shrink:0;}
-.btn-start{background:#16a34a;color:#fff;box-shadow:0 4px 0 #14532d;}
-.btn-start:active{box-shadow:0 1px 0 #14532d;}
-.btn-stop{background:#dc2626;color:#fff;box-shadow:0 4px 0 #7f1d1d;}
-.btn-stop:active{box-shadow:0 1px 0 #7f1d1d;}
-.btn-blink{background:#d97706;color:#fff;box-shadow:0 4px 0 #78350f;}
-.btn-blink:active{box-shadow:0 1px 0 #78350f;}
-.mode-indicator{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;}
-.mode-row{display:flex;align-items:center;justify-content:space-between;padding:8px 11px;border-bottom:1px solid var(--border);font-size:.75rem;}
-.mode-row:last-child{border-bottom:none;}
-.mode-label{color:var(--muted);font-weight:500;}
-.mode-pip{width:7px;height:7px;border-radius:50%;background:var(--border);transition:all .2s;}
-.mode-pip.active{background:var(--green);box-shadow:0 0 0 3px rgba(34,197,94,.15);}
-.log-list{display:flex;flex-direction:column;max-height:210px;overflow:hidden;}
-.log-entry{display:flex;align-items:flex-start;gap:7px;padding:5px 0;border-bottom:1px solid var(--border);animation:fadeSlide .2s ease;}
-.log-entry:last-child{border-bottom:none;}
-@keyframes fadeSlide{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
-.log-time{font-family:'DM Mono',monospace;font-size:.6rem;color:var(--muted);flex-shrink:0;padding-top:1px;}
-.log-msg{font-size:.71rem;font-weight:500;}
-.log-msg.green{color:#4ade80;}.log-msg.yellow{color:#fbbf24;}.log-msg.red{color:#f87171;}.log-msg.blue{color:#60a5fa;}
+/* ── RIGHT ── */
+.dur-card{
+  background:var(--bg);border-radius:var(--radius-sm);
+  box-shadow:var(--shadow-sm);padding:13px 15px;
+}
+.dur-head{
+  display:flex;align-items:center;gap:7px;
+  font-size:11px;font-weight:600;letter-spacing:1.5px;
+  text-transform:uppercase;color:var(--secondary);
+  margin-bottom:9px;font-family:'Space Mono',monospace;
+}
+.dur-dot{width:7px;height:7px;border-radius:50%;}
+.dur-dot.r{background:var(--accent-red);box-shadow:0 0 5px rgba(239,68,68,.5);}
+.dur-dot.y{background:var(--accent-yellow);box-shadow:0 0 5px rgba(245,158,11,.5);}
+.dur-dot.g{background:var(--accent-green);box-shadow:0 0 5px rgba(34,197,94,.5);}
+.knob-row{display:flex;align-items:center;gap:10px;}
+.knob{
+  -webkit-appearance:none;flex:1;height:6px;border-radius:3px;
+  background:var(--bg);box-shadow:var(--shadow-inset);outline:none;cursor:pointer;
+}
+.knob::-webkit-slider-thumb{
+  -webkit-appearance:none;width:19px;height:19px;border-radius:50%;
+  background:var(--bg);box-shadow:var(--shadow-sm);cursor:pointer;transition:box-shadow .15s;
+}
+.knob::-webkit-slider-thumb:hover{
+  box-shadow:3px 3px 7px var(--neu-dark),-3px -3px 7px var(--neu-light),0 0 0 2px var(--accent-blue);
+}
+.knob::-moz-range-thumb{
+  width:19px;height:19px;border-radius:50%;
+  background:var(--bg);box-shadow:var(--shadow-sm);border:none;cursor:pointer;
+}
+.knob-val{
+  font-family:'Space Mono',monospace;font-size:13px;font-weight:700;
+  color:var(--text);min-width:36px;text-align:right;
+}
 
-@media(max-width:1000px){main{grid-template-columns:1fr 1fr;}.tl-panel{grid-column:1;}.controls-panel{grid-column:2;}.scene-panel{grid-column:1/3;grid-row:2;}}
-@media(max-width:600px){main{grid-template-columns:1fr;padding:10px;}.tl-panel,.controls-panel,.scene-panel{grid-column:1;}}
+/* mode indicator */
+.mode-block{
+  background:var(--bg);border-radius:var(--radius-sm);
+  box-shadow:var(--shadow-inset);overflow:hidden;
+}
+.mode-row2{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:9px 12px;border-bottom:1px solid rgba(0,0,0,.05);
+  font-size:.75rem;
+}
+.mode-row2:last-child{border-bottom:none;}
+.mode-pip{width:7px;height:7px;border-radius:50%;background:var(--neu-dark);transition:all .25s;}
+.mode-pip.on{background:var(--accent-green);box-shadow:0 0 0 3px rgba(34,197,94,.15);}
+
+@media(max-width:1100px){main{grid-template-columns:250px 1fr 260px;gap:14px;padding:14px 14px 24px;}}
+@media(max-width:800px){main{grid-template-columns:1fr;}.center-panel{order:-1;}}
 </style>
 </head>
 <body>
@@ -118,83 +252,137 @@ main{max-width:1420px;margin:0 auto;padding:16px 16px 36px;display:grid;grid-tem
 <header>
   <div class="logo">
     <div class="logo-icon">🚦</div>
-    <div>Traffic IoT Dashboard<span class="logo-sub">ESP32 · Firebase Realtime · Sayre Hwy, Manolo Fortich</span></div>
+    <div class="logo-text">
+      <h1>Traffic<span>OS</span></h1>
+      <p>Smart Intersection · Sayre Hwy, Manolo Fortich</p>
+    </div>
   </div>
   <div class="header-right">
-    <div class="status-chip"><div class="status-dot" id="fbDot"></div><span id="fbLabel">Firebase</span></div>
-    <div class="status-chip"><div class="status-dot" id="espDot"></div><span id="espLabel">ESP32</span></div>
-    <div class="clock-chip" id="clockDisplay">00:00:00</div>
+    <div class="pill"><div class="dot warn" id="fbDot"></div><span id="fbLabel">CONNECTING</span></div>
+    <div class="pill"><div class="dot" id="espDot"></div><span id="espLabel">ESP32</span></div>
+    <div class="clock-pill" id="clock">--:--:--</div>
   </div>
 </header>
 
 <main>
-  <div class="card tl-panel">
-    <div class="card-header"><span class="card-title">Traffic Unit</span></div>
-    <div class="card-body">
-      <div style="padding-top:6px;padding-bottom:26px;">
-        <div class="tl-housing">
-          <div class="tl-bulb" id="bulbRed"></div>
-          <div class="tl-bulb" id="bulbYellow"></div>
-          <div class="tl-bulb" id="bulbGreen"></div>
+
+  <!-- LEFT: Signal Panel -->
+  <section class="panel">
+    <div class="panel-label">Signal Unit</div>
+
+    <div class="tl-wrap">
+      <div class="tl-housing">
+        <div class="tl-slot"><div class="tl-bulb r" id="bRed"></div></div>
+        <div class="tl-slot"><div class="tl-bulb y" id="bYellow"></div></div>
+        <div class="tl-slot"><div class="tl-bulb g" id="bGreen"></div></div>
+      </div>
+      <div class="phase-badge" id="phaseBadge">— Init —</div>
+      <div class="ring-wrap">
+        <svg class="ring-svg" viewBox="0 0 100 100" width="90" height="90">
+          <circle class="ring-bg" cx="50" cy="50" r="42"/>
+          <circle class="ring-fg" id="ringFg" cx="50" cy="50" r="42"
+            stroke-dasharray="264" stroke-dashoffset="264"/>
+        </svg>
+        <div class="ring-center">
+          <span id="cdNum">--</span>
+          <small>sec</small>
         </div>
       </div>
-      <div class="state-badge" id="stateLabel">— Offline —</div>
-      <div class="cd-row"><span class="cd-label">Time Remaining</span><span class="cd-num" id="cdNum">--</span></div>
-      <div class="progress-track"><div class="progress-fill" id="cdBar" style="width:0%"></div></div>
-      <div class="stat-grid">
-        <div class="stat-item"><div class="stat-key">Mode</div><div class="stat-val" id="modeVal">---</div></div>
-        <div class="stat-item"><div class="stat-key">Cycles</div><div class="stat-val" id="cycleVal">0</div></div>
-        <div class="stat-item"><div class="stat-key">Uptime</div><div class="stat-val" id="uptimeVal">00:00</div></div>
-        <div class="stat-item"><div class="stat-key">Prev</div><div class="stat-val" id="prevVal">---</div></div>
-      </div>
     </div>
-  </div>
 
-  <div class="card scene-panel" style="padding:0;">
-    <div class="card-header" style="padding:11px 14px 8px;">
-      <span class="card-title">📍 Sayre Hwy · Manolo Fortich — Overhead Map</span>
-      <span style="font-size:.68rem;color:var(--muted);">W A D / Arrow keys · Stay on road</span>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-val" id="sCycles">0</div><div class="stat-key">Cycles</div></div>
+      <div class="stat-card"><div class="stat-val" id="sCars">0</div><div class="stat-key">Cars</div></div>
+      <div class="stat-card"><div class="stat-val" id="sUptime">0m</div><div class="stat-key">Uptime</div></div>
+      <div class="stat-card"><div class="stat-val" id="sMode">AUTO</div><div class="stat-key">Mode</div></div>
     </div>
-    <div class="scene-wrap">
-      <canvas id="gameCanvas"></canvas>
-      <div class="violation-flash" id="violationFlash"></div>
+
+    <div class="log-box">
+      <div class="log-head">⬛ Event Log</div>
+      <div class="log-body" id="logBody"></div>
+    </div>
+  </section>
+
+  <!-- CENTER: Live Scene -->
+  <section class="panel center-panel">
+    <div class="panel-label">Live Intersection View — Sayre Hwy Overhead</div>
+    <div class="canvas-wrap">
+      <canvas id="roadCanvas"></canvas>
       <div class="cam-badge">● LIVE</div>
-      <div class="loc-tag">📍 Sayre Hwy Intersection</div>
-      <div class="drive-hint">
-        <span>Go:</span><div class="key-badge">W</div><div class="key-badge">↑</div>
-        <span style="margin:0 2px;">·</span>
-        <span>Turn:</span><div class="key-badge">A</div><div class="key-badge">D</div>
-      </div>
+      <div class="loc-tag">📍 Sayre Hwy · Manolo Fortich</div>
     </div>
-    <div class="scene-infobar">
-      <div class="info-chip">Speed: <b id="speedLabel">0 km/h</b></div>
-      <div class="speed-bar-track"><div class="speed-bar-fill" id="speedBar" style="width:0%"></div></div>
-      <div class="info-chip" style="margin-left:auto;">Status: <b id="driveStatus" style="color:var(--muted)">Stopped</b></div>
-      <div class="info-chip">Violations: <b id="violationCount" style="color:var(--red)">0</b></div>
+    <div class="infobar">
+      <div class="info-chip">Cars passed: <b id="iCars">0</b></div>
+      <div class="info-chip">Phase: <b id="iPhase">—</b></div>
+      <div class="info-chip right">Cycles: <b id="iCycles">0</b></div>
     </div>
-  </div>
+  </section>
 
-  <div class="card controls-panel">
-    <div class="card-header"><span class="card-title">System Controls</span></div>
-    <div class="card-body" style="display:flex;flex-direction:column;gap:8px;">
-      <button class="ctrl-btn btn-start" onclick="sendCommand(1)"><div class="btn-icon-wrap">▶</div>Start System</button>
-      <button class="ctrl-btn btn-stop"  onclick="sendCommand(0)"><div class="btn-icon-wrap">■</div>Stop System</button>
-      <button class="ctrl-btn btn-blink" onclick="sendCommand(2)"><div class="btn-icon-wrap">⚡</div>Blink Mode</button>
-      <div class="mode-indicator">
-        <div class="mode-row"><span class="mode-label">[ 0 ]  Off</span><div class="mode-pip" id="m0"></div></div>
-        <div class="mode-row"><span class="mode-label">[ 1 ]  Normal</span><div class="mode-pip" id="m1"></div></div>
-        <div class="mode-row"><span class="mode-label">[ 2 ]  Blink</span><div class="mode-pip" id="m2"></div></div>
+  <!-- RIGHT: Timing + Config -->
+  <section class="panel">
+    <div class="panel-label">Auto Timing Config</div>
+
+    <div style="display:flex;flex-direction:column;gap:11px;">
+      <div class="dur-card">
+        <div class="dur-head"><span class="dur-dot r"></span>Red Phase</div>
+        <div class="knob-row">
+          <input type="range" class="knob" id="kRed" min="3" max="60" value="20"
+            oninput="updateKnob('red',this.value)"/>
+          <div class="knob-val"><span id="vRed">20</span>s</div>
+        </div>
       </div>
-      <div style="margin-top:4px;">
-        <div class="card-title" style="margin-bottom:7px;">Event Log</div>
-        <div class="log-list" id="eventLog"></div>
+      <div class="dur-card">
+        <div class="dur-head"><span class="dur-dot y"></span>Yellow Phase</div>
+        <div class="knob-row">
+          <input type="range" class="knob" id="kYellow" min="2" max="15" value="3"
+            oninput="updateKnob('yellow',this.value)"/>
+          <div class="knob-val"><span id="vYellow">3</span>s</div>
+        </div>
+      </div>
+      <div class="dur-card">
+        <div class="dur-head"><span class="dur-dot g"></span>Green Phase</div>
+        <div class="knob-row">
+          <input type="range" class="knob" id="kGreen" min="3" max="60" value="10"
+            oninput="updateKnob('green',this.value)"/>
+          <div class="knob-val"><span id="vGreen">10</span>s</div>
+        </div>
       </div>
     </div>
-  </div>
+
+    <div class="mode-block">
+      <div class="mode-row2">
+        <span style="font-size:.75rem;color:var(--secondary);font-weight:500;">[ 0 ] Off</span>
+        <div class="mode-pip" id="m0"></div>
+      </div>
+      <div class="mode-row2">
+        <span style="font-size:.75rem;color:var(--secondary);font-weight:500;">[ 1 ] Normal Auto</span>
+        <div class="mode-pip on" id="m1"></div>
+      </div>
+      <div class="mode-row2">
+        <span style="font-size:.75rem;color:var(--secondary);font-weight:500;">[ 2 ] Blink</span>
+        <div class="mode-pip" id="m2"></div>
+      </div>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-val" id="rRed" style="color:var(--accent-red)">—</div><div class="stat-key">Red (s)</div></div>
+      <div class="stat-card"><div class="stat-val" id="rYellow" style="color:var(--accent-yellow)">—</div><div class="stat-key">Yellow (s)</div></div>
+      <div class="stat-card"><div class="stat-val" id="rGreen" style="color:var(--accent-green)">—</div><div class="stat-key">Green (s)</div></div>
+      <div class="stat-card"><div class="stat-val" id="rPrev">—</div><div class="stat-key">Prev Phase</div></div>
+    </div>
+
+    <div class="log-box" style="min-height:100px;">
+      <div class="log-head">⚙ System Info</div>
+      <div class="log-body" id="sysLog"></div>
+    </div>
+  </section>
+
 </main>
 
 <script>
-/* ── Firebase config (unchanged) ── */
+/* ══════════════════════════════════════════════
+   FIREBASE CONFIG
+══════════════════════════════════════════════ */
 const firebaseConfig={
   apiKey:"AIzaSyC6r5kNnapVhrzPQ-vA_Xm6pZRm6HQ3N7U",
   authDomain:"traffic-sim-5a9ef.firebaseapp.com",
@@ -205,504 +393,399 @@ const firebaseConfig={
   appId:"1:511074874213:web:a6b727744263d6b9be278c"
 };
 
-let db=null,currentState='OFF',currentMode=0;
-let startTime=Date.now(),cycleCount=0,violations=0;
-let metrics={GREEN:0,YELLOW:0,RED:0,total:0};
+let db=null;
+let currentState='OFF', currentMode=0;
+let cycles=0, carsPassed=0;
+let startTime=Date.now();
+let durations={red:20,yellow:3,green:10};
+let prevPhase='—';
 
-/* ══ CANVAS ══ */
-const canvas=document.getElementById('gameCanvas');
+/* ══════════════════════════════════════════════
+   CLOCK + UPTIME
+══════════════════════════════════════════════ */
+function updateClock(){
+  document.getElementById('clock').textContent=new Date().toTimeString().slice(0,8);
+  const s=Math.floor((Date.now()-startTime)/1000);
+  document.getElementById('sUptime').textContent=Math.floor(s/60)+'m';
+}
+setInterval(updateClock,1000); updateClock();
+
+/* ══════════════════════════════════════════════
+   KNOB PREVIEW (sliders just update label;
+   timing is driven by ESP32 via Firebase)
+══════════════════════════════════════════════ */
+function updateKnob(phase,val){
+  document.getElementById('v'+phase.charAt(0).toUpperCase()+phase.slice(1)).textContent=val;
+  durations[phase]=parseInt(val);
+}
+
+/* ══════════════════════════════════════════════
+   LOG HELPERS
+══════════════════════════════════════════════ */
+function addLog(type,tag,msg){
+  const log=document.getElementById('logBody');
+  const t=new Date().toTimeString().slice(0,8);
+  const el=document.createElement('div');
+  el.className='log-row '+type;
+  el.innerHTML=`<span class="ts">${t}</span><span class="tag">[${tag}]</span> ${msg}`;
+  log.prepend(el);
+  while(log.children.length>40) log.removeChild(log.lastChild);
+}
+function sysLog(msg,cls='info'){
+  const log=document.getElementById('sysLog');
+  const t=new Date().toTimeString().slice(0,8);
+  const el=document.createElement('div');
+  el.className='log-row '+cls;
+  el.innerHTML=`<span class="ts">${t}</span><span class="tag">[SYS]</span> ${msg}`;
+  log.prepend(el);
+  while(log.children.length>20) log.removeChild(log.lastChild);
+}
+
+/* ══════════════════════════════════════════════
+   LIGHT + RING UI
+══════════════════════════════════════════════ */
+function setLightUI(state){
+  ['Red','Yellow','Green'].forEach(c=>{
+    document.getElementById('b'+c).classList.remove('on');
+  });
+  const phaseColors={RED:'var(--accent-red)',YELLOW:'var(--accent-yellow)',GREEN:'var(--accent-green)'};
+  const ring=document.getElementById('ringFg');
+  const badge=document.getElementById('phaseBadge');
+  const names={RED:'RED — STOP',YELLOW:'YELLOW — WAIT',GREEN:'GREEN — GO',OFF:'OFFLINE',BLINK:'BLINK MODE'};
+
+  if(state==='RED')   { document.getElementById('bRed').classList.add('on');    ring.style.stroke='var(--accent-red)';    badge.style.color='var(--accent-red)'; }
+  else if(state==='YELLOW'){ document.getElementById('bYellow').classList.add('on'); ring.style.stroke='var(--accent-yellow)'; badge.style.color='var(--accent-yellow)'; }
+  else if(state==='GREEN') { document.getElementById('bGreen').classList.add('on');  ring.style.stroke='var(--accent-green)';  badge.style.color='var(--accent-green)'; }
+  else { ring.style.stroke='var(--muted)'; badge.style.color='var(--muted)'; }
+
+  badge.textContent=names[state]||state;
+}
+
+function setRing(remaining,total){
+  const c=264;
+  const off=c-((remaining/total)*c);
+  document.getElementById('ringFg').style.strokeDashoffset=off;
+  document.getElementById('cdNum').textContent=remaining>0?remaining:'--';
+}
+
+/* ══════════════════════════════════════════════
+   APPLY STATE FROM FIREBASE
+══════════════════════════════════════════════ */
+function applyState(data){
+  const state=(data.trafficLightState||'OFF').toUpperCase();
+  const mode=data.mode||0;
+  const cd=data.countdown||0;
+
+  if(state!==currentState){
+    prevPhase=currentState;
+    addLog(state==='RED'?'red':state==='YELLOW'?'yellow':state==='GREEN'?'green':'info',
+      state, state+' phase started');
+    if(state==='GREEN'&&currentState==='RED') cycles++;
+    if(state!=='OFF'&&state!=='BLINK') carsPassed+=Math.floor(Math.random()*4)+1;
+    document.getElementById('sCycles').textContent=cycles;
+    document.getElementById('sCars').textContent=carsPassed;
+    document.getElementById('iCars').textContent=carsPassed;
+    document.getElementById('iCycles').textContent=cycles;
+    document.getElementById('rPrev').textContent=prevPhase.slice(0,3);
+  }
+
+  currentState=state; currentMode=mode;
+
+  setLightUI(state);
+  document.getElementById('iPhase').textContent=state;
+
+  // Countdown ring — use configured durations as totals
+  const totals={RED:durations.red,YELLOW:durations.yellow,GREEN:durations.green};
+  const tot=totals[state]||10;
+  setRing(cd,tot);
+
+  // Runtime display
+  document.getElementById('rRed').textContent=data.redDuration||durations.red;
+  document.getElementById('rYellow').textContent=data.yellowDuration||durations.yellow;
+  document.getElementById('rGreen').textContent=data.greenDuration||durations.green;
+
+  // Mode pips
+  [0,1,2].forEach(m=>{
+    const el=document.getElementById('m'+m);
+    if(el) el.classList.toggle('on',m===mode);
+  });
+  document.getElementById('sMode').textContent=mode===0?'OFF':mode===2?'BLINK':'AUTO';
+
+  // ESP32 status
+  document.getElementById('espDot').className='dot'+(state!=='OFF'?' live':'');
+  document.getElementById('espLabel').textContent=state!=='OFF'?'ESP32 ON':'ESP32 OFF';
+}
+
+/* ══════════════════════════════════════════════
+   CANVAS — WAVY ROAD SCENE (auto NPC cars only)
+══════════════════════════════════════════════ */
+const canvas=document.getElementById('roadCanvas');
 const ctx=canvas.getContext('2d');
+let wOff=0;
 
-/* ══ MAP GEOMETRY ══
-   Fixed 900×600 world. Always fully visible. No camera follow.
-   Road network:
-     - Central cross (horizontal + vertical through IX,IY)
-     - Outer rectangular loop
-   Car is constrained to road pixels only.
-*/
-const MAP_W=900, MAP_H=600;
-const RW=50; // road half-width (pixels in world space)
-const IX=450, IY=300; // main intersection centre
-
-// Outer ring coords
-const OTY=100, OBY=500, OLX=140, ORX=760;
-
-// Traffic light position & rules
-const TL_WX=IX+RW+12, TL_WY=IY+RW+12;
-const TL_ZONE=120;
-const STOP_WY=IY+RW+15;
-
-/* ── onRoad: check if world point is driveable ── */
-function onRoad(x,y){
-  if(x<0||x>MAP_W||y<0||y>MAP_H) return false;
-  // Centre cross
-  if(y>=IY-RW&&y<=IY+RW) return true;
-  if(x>=IX-RW&&x<=IX+RW) return true;
-  // Outer ring: top/bottom straights + left/right straights + corners
-  const onTop   =y>=OTY-RW&&y<=OTY+RW&&x>=OLX-RW&&x<=ORX+RW;
-  const onBottom=y>=OBY-RW&&y<=OBY+RW&&x>=OLX-RW&&x<=ORX+RW;
-  const onLeft  =x>=OLX-RW&&x<=OLX+RW&&y>=OTY-RW&&y<=OBY+RW;
-  const onRight =x>=ORX-RW&&x<=ORX+RW&&y>=OTY-RW&&y<=OBY+RW;
-  return onTop||onBottom||onLeft||onRight;
-}
-
-/* ── Scale world → canvas ── */
-let sX=1,sY=1,oX=0,oY=0;
-function computeScale(){
-  const s=Math.min(canvas.width/MAP_W,canvas.height/MAP_H);
-  sX=sY=s; oX=(canvas.width-MAP_W*s)/2; oY=(canvas.height-MAP_H*s)/2;
-}
 function resizeCanvas(){
-  const w=canvas.parentElement; canvas.width=w.clientWidth; canvas.height=w.clientHeight; computeScale();
+  canvas.width=canvas.parentElement.clientWidth;
+  canvas.height=canvas.parentElement.clientHeight;
 }
-const wx=x=>oX+x*sX, wy=y=>oY+y*sY;
-const ws=(x,y)=>({sx:wx(x),sy:wy(y)});
-const sz=v=>v*sX;
+window.addEventListener('resize',resizeCanvas);
+resizeCanvas();
 
-/* ── Seeded decoration positions ── */
-function seed(n){let x=Math.sin(n)*99999;return x-Math.floor(x);}
-const TREES=[];
-for(let i=0;i<140;i++){
-  const tx=seed(i*3+1)*MAP_W, ty=seed(i*3+2)*MAP_H;
-  if(!onRoad(tx,ty)&&!onRoad(tx-10,ty)&&!onRoad(tx+10,ty)&&!onRoad(tx,ty-10)&&!onRoad(tx,ty+10)){
-    TREES.push({x:tx,y:ty,r:6+seed(i*3+3)*8,c:seed(i)>0.45?'#1a3d1a':'#14532d',d:seed(i+100)>0.5});
+/* ── Road path helpers ── */
+function roadPts(W,H,offsetY,amp,freq,wo){
+  const pts=[],steps=80;
+  for(let i=0;i<=steps;i++){
+    const x=(i/steps)*W;
+    const y=offsetY+Math.sin((i/steps)*Math.PI*freq+wo)*amp;
+    pts.push({x,y});
   }
+  return pts;
 }
-const BUILDINGS=[
-  {x:240,y:150,w:75,h:58,color:'#1a2640',roof:'#1e3a8a',label:'SCHOOL',lc:'#93c5fd'},
-  {x:590,y:145,w:90,h:65,color:'#14261a',roof:'#166534',label:'CITY MALL',lc:'#86efac'},
-  {x:590,y:375,w:65,h:52,color:'#26142a',roof:'#6d28d9',label:'',lc:'#c4b5fd'},
-  {x:245,y:370,w:62,h:48,color:'#302010',roof:'#9a3412',label:'GAS',lc:'#fdba74'},
-  {x:390,y:155,w:46,h:42,color:'#1a261a',roof:'#14532d',label:'',lc:''},
-  {x:390,y:390,w:46,h:40,color:'#261a1a',roof:'#7f1d1d',label:'BARN',lc:'#fca5a5'},
-];
+function ptAt(pts,t){
+  const i=Math.min(Math.floor(t*(pts.length-1)),pts.length-2);
+  const f=t*(pts.length-1)-i;
+  return{x:pts[i].x+(pts[i+1].x-pts[i].x)*f, y:pts[i].y+(pts[i+1].y-pts[i].y)*f};
+}
+function angleAt(pts,t){
+  const p1=ptAt(pts,t),p2=ptAt(pts,Math.min(t+.01,1));
+  return Math.atan2(p2.y-p1.y,p2.x-p1.x);
+}
 
-/* ── Player car ── */
-const car={
-  x:IX,y:IY+RW+70,
-  angle:-Math.PI/2, // facing north
-  speed:0,maxSpeed:3.6,
-  accel:0.09,brake:0.16,friction:0.033,turn:0.026,
-  w:16,h:30,
-  color:'#2563eb',roof:'#1d4ed8',
-  alpha:1,fadeTarget:1,
-};
+/* ── NPC cars ── */
+const CAR_COLS=['#3b6ff5','#ef4444','#f59e0b','#22c55e','#8b5cf6','#ec4899','#06b6d4','#f97316'];
+let npcs=[];
 
-const keys={};
-window.addEventListener('keydown',e=>{keys[e.key]=true;['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key)&&e.preventDefault();});
-window.addEventListener('keyup',  e=>{keys[e.key]=false;});
-
-let violationCooldown=0,flashTimer=null;
-
-/* ══ CAR UPDATE ══ */
-function updateCar(){
-  const AK=keys['w']||keys['W']||keys['ArrowUp'];
-  const BK=keys['s']||keys['S']||keys['ArrowDown'];
-  const LK=keys['a']||keys['A']||keys['ArrowLeft'];
-  const RK=keys['d']||keys['D']||keys['ArrowRight'];
-
-  const dist=Math.hypot(car.x-TL_WX,car.y-TL_WY);
-  const near=dist<TL_ZONE;
-  const isG=currentState==='GREEN',isY=currentState==='YELLOW';
-  const isR=currentState==='RED',  isO=currentState==='OFF';
-  const isB=currentState==='BLINK';
-  const hN=car.angle>-Math.PI*.92&&car.angle<-Math.PI*.08;
-  const sApp=car.y>IY&&car.y<STOP_WY+50;
-  const halt=near&&(isR||isO)&&hN&&sApp;
-  const top=near?(isG?car.maxSpeed:isY?car.maxSpeed*.45:isB?car.maxSpeed*.3:0):car.maxSpeed;
-
-  if(AK){
-    if(halt&&car.y<=STOP_WY+2){
-      car.speed=0;car.y=Math.max(car.y,STOP_WY+2);
-      if(violationCooldown<=0){
-        violations++;document.getElementById('violationCount').textContent=violations;
-        violationCooldown=160;
-        const fl=document.getElementById('violationFlash');
-        fl.classList.add('on');clearTimeout(flashTimer);
-        flashTimer=setTimeout(()=>fl.classList.remove('on'),600);
-        addLog('Red light violation!','red');
-      }
-    } else { car.speed=Math.min(car.speed+car.accel,top); }
-  } else if(BK){
-    car.speed=Math.max(car.speed-car.brake,0);
+function spawnNPC(){
+  const lane=Math.floor(Math.random()*2);
+  // find rearmost car in same lane and spawn behind
+  const same=npcs.filter(c=>c.lane===lane);
+  let startT=0;
+  if(same.length){
+    const minT=Math.min(...same.map(c=>c.t));
+    startT=Math.max(0,minT-0.10-Math.random()*0.06);
   } else {
-    const slow=near&&(isY||(halt&&car.y<STOP_WY+50));
-    car.speed=Math.max(car.speed-(slow?car.friction*3:car.friction),0);
+    startT=Math.random()*0.25;
   }
+  npcs.push({
+    t:startT,
+    spd:0.0014+Math.random()*0.0013,
+    color:CAR_COLS[Math.floor(Math.random()*CAR_COLS.length)],
+    w:20+Math.random()*7, h:11+Math.random()*4,
+    lane, bob:Math.random()*Math.PI*2,
+    actualSpd:0
+  });
+}
+setInterval(()=>{if(npcs.length<12&&Math.random()<.6)spawnNPC();},900);
 
-  if(car.speed>0.1){
-    const t=car.turn*(car.speed/car.maxSpeed);
-    if(LK)car.angle-=t; if(RK)car.angle+=t;
-  }
+/* ── Draw road ── */
+function drawRoad(W,H,wo){
+  const amp=H*.10,freq=2.8,cy=H*.5,rw=64;
+  const top=roadPts(W,H,cy-rw/2,amp,freq,wo);
+  const bot=roadPts(W,H,cy+rw/2,amp,freq,wo);
+  const mid=roadPts(W,H,cy,amp,freq,wo);
 
-  const nx=car.x+Math.cos(car.angle)*car.speed;
-  const ny=car.y+Math.sin(car.angle)*car.speed;
+  // fill
+  ctx.beginPath();
+  ctx.moveTo(top[0].x,top[0].y);
+  top.forEach(p=>ctx.lineTo(p.x,p.y));
+  bot.slice().reverse().forEach(p=>ctx.lineTo(p.x,p.y));
+  ctx.closePath();
+  const rg=ctx.createLinearGradient(0,cy-rw,0,cy+rw);
+  rg.addColorStop(0,'#1e2435');rg.addColorStop(.5,'#181c28');rg.addColorStop(1,'#1e2435');
+  ctx.fillStyle=rg; ctx.fill();
 
-  // Near a map edge? Skip road check so the car can exit and wrap
-  const atEdge=car.x<RW||car.x>MAP_W-RW||car.y<RW||car.y>MAP_H-RW;
-  if(atEdge){
-    car.x=nx; car.y=ny;
-  } else {
-    // Road constraint — slide along each axis without killing speed
-    if(onRoad(nx,ny)){car.x=nx;car.y=ny;}
-    else if(onRoad(nx,car.y)){car.x=nx;}
-    else if(onRoad(car.x,ny)){car.y=ny;}
-    // fully blocked: keep position, preserve speed
-  }
+  // edges
+  ctx.strokeStyle='rgba(255,255,255,0.18)';ctx.lineWidth=2;ctx.setLineDash([]);
+  ctx.beginPath();top.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.stroke();
+  ctx.beginPath();bot.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.stroke();
 
-  // Instant wrap
-  if(car.x<-5)car.x=MAP_W+5;
-  else if(car.x>MAP_W+5)car.x=-5;
-  if(car.y<-5)car.y=MAP_H+5;
-  else if(car.y>MAP_H+5)car.y=-5;
-
-  car.alpha=1;
-
-  if(violationCooldown>0)violationCooldown--;
-
-  // HUD
-  const kmh=Math.round(car.speed/car.maxSpeed*65);
-  document.getElementById('speedLabel').textContent=kmh+' km/h';
-  document.getElementById('speedBar').style.width=(car.speed/car.maxSpeed*100)+'%';
-  document.getElementById('speedBar').style.background=halt?'#ef4444':isY&&near?'#f59e0b':'#22c55e';
-  const ds=document.getElementById('driveStatus');
-  if(halt&&car.speed<0.05){ds.textContent='🔴 Stopped at Red';ds.style.color='var(--red)';}
-  else if(isY&&car.speed>0&&near){ds.textContent='🟡 Slowing';ds.style.color='var(--yellow)';}
-  else if(isG&&car.speed>0){ds.textContent='🟢 Moving';ds.style.color='var(--green)';}
-  else if(car.speed<0.05){ds.textContent='Stopped';ds.style.color='var(--muted)';}
-  else{ds.textContent='Driving';ds.style.color='var(--muted)';}
+  // center dash
+  ctx.strokeStyle='rgba(250,204,21,0.45)';ctx.lineWidth=1.8;ctx.setLineDash([22,14]);
+  ctx.beginPath();mid.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.stroke();
+  ctx.setLineDash([]);
 }
 
-/* ══ DRAW WORLD ══ */
-function drawWorld(){
+/* ── Traffic light on canvas ── */
+function drawTLCanvas(W,H,wo){
+  const cx2=W*.5;
+  const cy2=H*.5+Math.sin(Math.PI*2.8*.5+wo)*H*.10;
+  const poleH=62, py=cy2-38;
+
+  ctx.strokeStyle='rgba(160,160,180,0.7)';ctx.lineWidth=3;
+  ctx.beginPath();ctx.moveTo(cx2,py+poleH);ctx.lineTo(cx2,py+8);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(cx2,py+10);ctx.lineTo(cx2+20,py+10);ctx.stroke();
+
+  const hx=cx2+10,hy=py-28,hw=14,hh=34;
+  ctx.fillStyle='#1c2030';
+  ctx.beginPath();ctx.roundRect(hx,hy,hw,hh,3);ctx.fill();
+
+  const cols={
+    RED:    ['#ef4444','#2a1000','#003010'],
+    YELLOW: ['#2a0000','#f59e0b','#003010'],
+    GREEN:  ['#2a0000','#2a1000','#22c55e'],
+    BLINK:  ['#ef4444','#f59e0b','#22c55e'],
+    OFF:    ['#1a0000','#1a1000','#001500'],
+  };
+  const glows={
+    RED:['rgba(239,68,68,.9)',null,null],
+    YELLOW:[null,'rgba(245,158,11,.9)',null],
+    GREEN:[null,null,'rgba(34,197,94,.9)'],
+    BLINK:['rgba(239,68,68,.6)','rgba(245,158,11,.6)','rgba(34,197,94,.6)'],
+    OFF:[null,null,null],
+  };
+  const blinkOff=currentState==='BLINK'&&Math.floor(Date.now()/380)%2===0;
+  const c=blinkOff?cols.OFF:(cols[currentState]||cols.OFF);
+  const g=blinkOff?glows.OFF:(glows[currentState]||glows.OFF);
+
+  [hy+7,hy+18,hy+29].forEach((ly,i)=>{
+    const lx=hx+hw/2;
+    if(g[i]){ctx.shadowColor=g[i];ctx.shadowBlur=10;}
+    ctx.fillStyle=c[i];
+    ctx.beginPath();ctx.arc(lx,ly,4,0,Math.PI*2);ctx.fill();
+    ctx.shadowBlur=0;
+  });
+}
+
+/* ── Draw NPC cars ── */
+function drawNPC(car,W,H,wo){
+  const laneOff=[-14,14];
+  const amp=H*.10,freq=2.8,cy=H*.5;
+  const pts=roadPts(W,H,cy+laneOff[car.lane],amp,freq,wo);
+  const pos=ptAt(pts,car.t);
+  const ang=car.lane===0?angleAt(pts,car.t):angleAt(pts,car.t)+Math.PI;
+
+  ctx.save();
+  ctx.translate(pos.x,pos.y);
+  ctx.rotate(ang);
+
+  // shadow
+  ctx.fillStyle='rgba(0,0,0,.25)';
+  ctx.beginPath();ctx.ellipse(1,2,car.w*.4,car.h*.2,0,0,Math.PI*2);ctx.fill();
+
+  // body
+  ctx.beginPath();ctx.roundRect(-car.w/2,-car.h/2,car.w,car.h,3);
+  ctx.fillStyle=car.color;ctx.fill();
+
+  // glare
+  ctx.fillStyle='rgba(255,255,255,.22)';
+  ctx.beginPath();ctx.roundRect(-car.w/2+2,-car.h/2+1,car.w*.34,car.h-2,2);ctx.fill();
+
+  // headlights
+  const atRed=(currentState==='RED'||currentState==='OFF');
+  ctx.fillStyle=atRed?'#ef4444':'#fefce8';
+  ctx.beginPath();ctx.arc(car.w/2-2,-car.h/2+2,1.8,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.arc(car.w/2-2, car.h/2-2,1.8,0,Math.PI*2);ctx.fill();
+
+  ctx.restore();
+}
+
+/* ── Update NPCs: gap enforcement + red-light stop ── */
+function updateNPCs(W,H){
+  const STOP_T=[0.43,0.57]; // zone where stop line sits
+  const MIN_GAP=0.055;
+
+  const byLane=[
+    npcs.filter(c=>c.lane===0).sort((a,b)=>b.t-a.t),
+    npcs.filter(c=>c.lane===1).sort((a,b)=>a.t-b.t),
+  ];
+
+  npcs.forEach(car=>{
+    const atLight=car.t>=STOP_T[0]&&car.t<=STOP_T[1];
+    const mustStop=(currentState==='RED'||currentState==='OFF')&&atLight;
+
+    const lane=byLane[car.lane];
+    const idx=lane.indexOf(car);
+    const ahead=lane[idx-1];
+    let tooClose=false;
+    if(ahead){
+      const gap=car.lane===0?ahead.t-car.t:car.t-ahead.t;
+      if(gap<MIN_GAP) tooClose=true;
+    }
+
+    let target=mustStop||tooClose?0:car.spd;
+    if(tooClose&&!mustStop) target=car.spd*.12;
+    car.actualSpd=car.actualSpd===undefined?target:car.actualSpd+(target-car.actualSpd)*.14;
+    car.t+=car.actualSpd;
+    if(car.t>=1){ car.t=1; }
+  });
+
+  const before=npcs.length;
+  npcs=npcs.filter(c=>c.t<1);
+}
+
+/* ── Scenery ── */
+function drawScenery(W,H,wo){
+  const amp=H*.10,freq=2.8;
+
+  // grass gradients
+  const g1=ctx.createLinearGradient(0,0,0,H*.36);
+  g1.addColorStop(0,'#0e1f0e');g1.addColorStop(1,'rgba(14,31,14,0)');
+  ctx.fillStyle=g1;ctx.fillRect(0,0,W,H*.4);
+
+  const g2=ctx.createLinearGradient(0,H*.64,0,H);
+  g2.addColorStop(0,'rgba(14,31,14,0)');g2.addColorStop(1,'#0e1f0e');
+  ctx.fillStyle=g2;ctx.fillRect(0,H*.6,W,H*.4);
+
+  // trees on both sides
+  [.07,.18,.30,.62,.76,.90].forEach(tx=>{
+    const ry=H*.5+Math.sin(tx*Math.PI*freq+wo)*amp;
+    const x=tx*W;
+    [ry-52,ry+52].forEach((ty,side)=>{
+      ctx.fillStyle='#3d2106';ctx.fillRect(x-2,ty+(side?-18:0),4,18);
+      ctx.fillStyle='#1a4d1a';ctx.beginPath();ctx.arc(x,ty+(side?-4:0),14,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#0d3d0d';ctx.beginPath();ctx.arc(x+(side?3:-3),ty+(side?-8:4),9,0,Math.PI*2);ctx.fill();
+    });
+  });
+}
+
+/* ── Main draw loop ── */
+function draw(){
   const W=canvas.width,H=canvas.height;
+  ctx.clearRect(0,0,W,H);
 
-  /* Background */
+  // sky/bg
   const bg=ctx.createLinearGradient(0,0,W,H);
-  bg.addColorStop(0,'#0c1a0c');bg.addColorStop(1,'#091209');
+  bg.addColorStop(0,'#0e1520');bg.addColorStop(1,'#0b1a10');
   ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
 
-  /* Map frame */
-  ctx.strokeStyle='rgba(255,255,255,0.05)';ctx.lineWidth=1;
-  ctx.strokeRect(oX,oY,MAP_W*sX,MAP_H*sY);
+  drawScenery(W,H,wOff);
+  drawRoad(W,H,wOff);
+  drawTLCanvas(W,H,wOff);
+  updateNPCs(W,H);
+  npcs.forEach(car=>drawNPC(car,W,H,wOff));
 
-  /* Lake */
-  {const lp=ws(195,215);
-  const lg=ctx.createRadialGradient(lp.sx,lp.sy,0,lp.sx,lp.sy,sz(50));
-  lg.addColorStop(0,'#1a3a55');lg.addColorStop(1,'#0a1e2e');
-  ctx.fillStyle=lg;ctx.beginPath();ctx.ellipse(lp.sx,lp.sy,sz(50),sz(32),-0.25,0,Math.PI*2);ctx.fill();
-  ctx.strokeStyle='#1a3a55';ctx.lineWidth=sz(1.2);ctx.stroke();
-  ctx.fillStyle='rgba(255,255,255,0.1)';
-  ctx.fillRect(lp.sx-sz(14),lp.sy-sz(5),sz(9),sz(2));
-  ctx.fillRect(lp.sx+sz(5),lp.sy+sz(4),sz(6),sz(1.5));}
-
-  /* Football pitch */
-  {const fp=ws(630,195);
-  ctx.fillStyle='#0a220a';ctx.fillRect(fp.sx-sz(36),fp.sy-sz(22),sz(72),sz(44));
-  for(let i=0;i<4;i++){ctx.fillStyle=i%2===0?'rgba(255,255,255,0.03)':'rgba(0,0,0,0)';ctx.fillRect(fp.sx-sz(36)+i*sz(18),fp.sy-sz(22),sz(18),sz(44));}
-  ctx.strokeStyle='rgba(255,255,255,0.25)';ctx.lineWidth=sz(1);
-  ctx.strokeRect(fp.sx-sz(32),fp.sy-sz(18),sz(64),sz(36));
-  ctx.beginPath();ctx.arc(fp.sx,fp.sy,sz(7),0,Math.PI*2);ctx.stroke();
-  ctx.beginPath();ctx.moveTo(fp.sx,fp.sy-sz(18));ctx.lineTo(fp.sx,fp.sy+sz(18));ctx.stroke();}
-
-  /* Tents */
-  [[632,390],[655,408],[614,406]].forEach(([tx,ty],i)=>{
-    const tp=ws(tx,ty);
-    ctx.fillStyle=['#4a0f0f','#4a2e0f','#0f204a'][i];
-    ctx.beginPath();ctx.moveTo(tp.sx,tp.sy-sz(10));ctx.lineTo(tp.sx-sz(10),tp.sy+sz(3));ctx.lineTo(tp.sx+sz(10),tp.sy+sz(3));ctx.closePath();ctx.fill();
-    ctx.fillStyle='rgba(255,255,255,0.07)';ctx.fillRect(tp.sx-sz(7),tp.sy+sz(3),sz(14),sz(5));});
-
-  /* Ferris wheel */
-  {const fp=ws(665,405);const fr=sz(26);const t=Date.now()/2200;
-  ctx.strokeStyle='#2d3748';ctx.lineWidth=sz(2.5);
-  ctx.beginPath();ctx.moveTo(fp.sx-fr*.5,fp.sy+fr);ctx.lineTo(fp.sx,fp.sy);ctx.stroke();
-  ctx.beginPath();ctx.moveTo(fp.sx+fr*.5,fp.sy+fr);ctx.lineTo(fp.sx,fp.sy);ctx.stroke();
-  ctx.strokeStyle='#374151';ctx.lineWidth=sz(2.5);
-  ctx.beginPath();ctx.arc(fp.sx,fp.sy,fr,0,Math.PI*2);ctx.stroke();
-  for(let s=0;s<6;s++){const a=t+s*Math.PI/3;
-    ctx.strokeStyle='rgba(255,255,255,0.1)';ctx.lineWidth=sz(1);
-    ctx.beginPath();ctx.moveTo(fp.sx,fp.sy);ctx.lineTo(fp.sx+Math.cos(a)*fr,fp.sy+Math.sin(a)*fr);ctx.stroke();
-    ctx.fillStyle=['#4a0f0f','#0f204a','#0f3020','#4a2e0f','#2a0f4a','#4a0f30'][s];
-    ctx.beginPath();ctx.arc(fp.sx+Math.cos(a)*fr,fp.sy+Math.sin(a)*fr,sz(3.5),0,Math.PI*2);ctx.fill();}
-  ctx.fillStyle='#1f2937';ctx.beginPath();ctx.arc(fp.sx,fp.sy,sz(4),0,Math.PI*2);ctx.fill();}
-
-  /* Windmill */
-  {const wp=ws(375,175);const wt=Date.now()/900;
-  ctx.fillStyle='#2d3748';ctx.beginPath();ctx.moveTo(wp.sx-sz(4),wp.sy+sz(20));ctx.lineTo(wp.sx+sz(4),wp.sy+sz(20));ctx.lineTo(wp.sx+sz(2.5),wp.sy);ctx.lineTo(wp.sx-sz(2.5),wp.sy);ctx.closePath();ctx.fill();
-  ctx.strokeStyle='#4b5563';ctx.lineWidth=sz(1.8);
-  for(let b=0;b<4;b++){const a=wt+b*Math.PI/2;
-    ctx.beginPath();ctx.moveTo(wp.sx,wp.sy);ctx.lineTo(wp.sx+Math.cos(a)*sz(14),wp.sy+Math.sin(a)*sz(14));ctx.stroke();
-    ctx.fillStyle='rgba(255,255,255,0.1)';
-    ctx.beginPath();ctx.ellipse(wp.sx+Math.cos(a)*sz(9),wp.sy+Math.sin(a)*sz(9),sz(3.5),sz(1.8),a,0,Math.PI*2);ctx.fill();}
-  ctx.fillStyle='#6b7280';ctx.beginPath();ctx.arc(wp.sx,wp.sy,sz(2.5),0,Math.PI*2);ctx.fill();}
-
-  /* Balloon */
-  {const bx=200+Math.sin(Date.now()/3000)*14,by=155+Math.sin(Date.now()/2100)*9;
-  const bp=ws(bx,by);
-  const bg2=ctx.createRadialGradient(bp.sx-sz(3),bp.sy-sz(5),sz(1),bp.sx,bp.sy,sz(16));
-  bg2.addColorStop(0,'#3b0764');bg2.addColorStop(1,'#1e1040');
-  ctx.fillStyle=bg2;ctx.beginPath();ctx.ellipse(bp.sx,bp.sy,sz(12),sz(16),0,0,Math.PI*2);ctx.fill();
-  ctx.strokeStyle='rgba(139,92,246,0.3)';ctx.lineWidth=sz(1);ctx.stroke();
-  for(let s=-2;s<=2;s++){ctx.strokeStyle='rgba(255,255,255,0.07)';ctx.lineWidth=sz(.8);ctx.beginPath();ctx.moveTo(bp.sx+s*sz(3),bp.sy-sz(16));ctx.lineTo(bp.sx+s*sz(2.5),bp.sy+sz(16));ctx.stroke();}
-  ctx.fillStyle='#4a2206';ctx.fillRect(bp.sx-sz(4),bp.sy+sz(17),sz(8),sz(6));}
-
-  /* Mountains */
-  [[380,55,55,20,'#142014'],[450,48,45,16,'#0f280f'],[310,60,50,18,'#101e10']].forEach(([mx,my,mw,mh,mc])=>{
-    const mp=ws(mx,my);ctx.fillStyle=mc;
-    ctx.beginPath();ctx.moveTo(mp.sx-sz(mw),mp.sy+sz(mh));ctx.lineTo(mp.sx,mp.sy-sz(mh*1.3));ctx.lineTo(mp.sx+sz(mw),mp.sy+sz(mh));ctx.closePath();ctx.fill();
-    ctx.fillStyle='rgba(255,255,255,0.07)';
-    ctx.beginPath();ctx.moveTo(mp.sx-sz(mw*.14),mp.sy-sz(mh*.82));ctx.lineTo(mp.sx,mp.sy-sz(mh*1.3));ctx.lineTo(mp.sx+sz(mw*.14),mp.sy-sz(mh*.82));ctx.closePath();ctx.fill();});
-
-  /* Clouds */
-  [[190,52],[460,42],[710,56]].forEach(([cx,cy],i)=>{
-    const d=Math.sin(Date.now()/4000+i)*9,cp=ws(cx+d,cy);
-    ctx.fillStyle='rgba(255,255,255,0.05)';
-    [[0,0,13],[11,-3,10],[22,0,11],[-7,-3,8]].forEach(([ox,oy,r])=>{ctx.beginPath();ctx.arc(cp.sx+sz(ox),cp.sy+sz(oy),sz(r),0,Math.PI*2);ctx.fill();});});
-
-  /* Trees */
-  TREES.forEach(tr=>{
-    const tp=ws(tr.x,tr.y);
-    if(tp.sx<oX-20||tp.sx>oX+MAP_W*sX+20||tp.sy<oY-20||tp.sy>oY+MAP_H*sY+20)return;
-    ctx.fillStyle='#2d1506';ctx.fillRect(tp.sx-sz(1.2),tp.sy,sz(2.4),sz(5));
-    ctx.fillStyle=tr.c;ctx.beginPath();ctx.arc(tp.sx,tp.sy,sz(tr.r),0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='rgba(0,0,0,0.22)';ctx.beginPath();ctx.arc(tp.sx+sz(2),tp.sy+sz(2),sz(tr.r*.55),0,Math.PI*2);ctx.fill();});
-
-  /* Buildings */
-  BUILDINGS.forEach(b=>{
-    const bp=ws(b.x,b.y);
-    ctx.fillStyle='rgba(0,0,0,0.35)';ctx.fillRect(bp.sx+sz(3),bp.sy+sz(3),sz(b.w),sz(b.h));
-    ctx.fillStyle=b.color;ctx.beginPath();ctx.roundRect(bp.sx,bp.sy,sz(b.w),sz(b.h),sz(3));ctx.fill();
-    ctx.fillStyle=b.roof;ctx.beginPath();ctx.roundRect(bp.sx,bp.sy,sz(b.w),sz(11),[sz(3),sz(3),0,0]);ctx.fill();
-    ctx.fillStyle='rgba(255,255,180,0.12)';
-    for(let rr=0;rr<2;rr++)for(let cc=0;cc<3;cc++)ctx.fillRect(bp.sx+sz(5+cc*14),bp.sy+sz(15+rr*12),sz(7),sz(6));
-    if(b.label){ctx.fillStyle=b.lc;ctx.font=`600 ${sz(6.5)}px DM Sans`;ctx.textAlign='center';ctx.fillText(b.label,bp.sx+sz(b.w*.5),bp.sy+sz(b.h*.56));}});
-  ctx.textAlign='left';
-
-  /* ══ ROADS ══ */
-  const RC='#181c22', RE='rgba(255,255,255,0.1)', DC='rgba(250,204,21,0.4)';
-
-  function rFill(x1,y1,x2,y2){const a=ws(x1,y1),b=ws(x2,y2);ctx.fillStyle=RC;ctx.fillRect(a.sx,a.sy,b.sx-a.sx,b.sy-a.sy);}
-  function rEdge(x1,y1,x2,y2){const a=ws(x1,y1),b=ws(x2,y2);ctx.strokeStyle=RE;ctx.lineWidth=sz(1.3);ctx.setLineDash([]);ctx.beginPath();ctx.moveTo(a.sx,a.sy);ctx.lineTo(b.sx,b.sy);ctx.stroke();}
-  function rDash(x1,y1,x2,y2){const a=ws(x1,y1),b=ws(x2,y2);ctx.strokeStyle=DC;ctx.lineWidth=sz(1);ctx.setLineDash([sz(12),sz(9)]);ctx.beginPath();ctx.moveTo(a.sx,a.sy);ctx.lineTo(b.sx,b.sy);ctx.stroke();ctx.setLineDash([]);}
-
-  // Outer ring
-  rFill(OLX-RW,OTY-RW,ORX+RW,OTY+RW); // top
-  rFill(OLX-RW,OBY-RW,ORX+RW,OBY+RW); // bottom
-  rFill(OLX-RW,OTY-RW,OLX+RW,OBY+RW); // left
-  rFill(ORX-RW,OTY-RW,ORX+RW,OBY+RW); // right
-
-  // Centre cross
-  rFill(0,IY-RW,MAP_W,IY+RW);
-  rFill(IX-RW,0,IX+RW,MAP_H);
-  rFill(IX-RW,IY-RW,IX+RW,IY+RW); // intersection box
-
-  // Road surface highlight
-  ctx.fillStyle='rgba(255,255,255,0.015)';
-  const ch1=ws(0,IY-3),ch2=ws(MAP_W,IY+3);ctx.fillRect(ch1.sx,ch1.sy,ch2.sx-ch1.sx,ch2.sy-ch1.sy);
-  const cv1=ws(IX-3,0),cv2=ws(IX+3,MAP_H);ctx.fillRect(cv1.sx,cv1.sy,cv2.sx-cv1.sx,cv2.sy-cv1.sy);
-
-  // Outer ring edges
-  rEdge(OLX+RW,OTY-RW,ORX-RW,OTY-RW);rEdge(OLX+RW,OTY+RW,ORX-RW,OTY+RW);
-  rEdge(OLX+RW,OBY-RW,ORX-RW,OBY-RW);rEdge(OLX+RW,OBY+RW,ORX-RW,OBY+RW);
-  rEdge(OLX-RW,OTY+RW,OLX-RW,OBY-RW);rEdge(OLX+RW,OTY+RW,OLX+RW,OBY-RW);
-  rEdge(ORX-RW,OTY+RW,ORX-RW,OBY-RW);rEdge(ORX+RW,OTY+RW,ORX+RW,OBY-RW);
-
-  // Centre cross edges
-  rEdge(0,IY-RW,IX-RW,IY-RW);rEdge(0,IY+RW,IX-RW,IY+RW);
-  rEdge(IX+RW,IY-RW,MAP_W,IY-RW);rEdge(IX+RW,IY+RW,MAP_W,IY+RW);
-  rEdge(IX-RW,0,IX-RW,IY-RW);rEdge(IX+RW,0,IX+RW,IY-RW);
-  rEdge(IX-RW,IY+RW,IX-RW,MAP_H);rEdge(IX+RW,IY+RW,IX+RW,MAP_H);
-
-  // Centre dashes
-  rDash(0,IY,IX-RW,IY);rDash(IX+RW,IY,MAP_W,IY);
-  rDash(IX,0,IX,IY-RW);rDash(IX,IY+RW,IX,MAP_H);
-  rDash(OLX,OTY,ORX,OTY);rDash(OLX,OBY,ORX,OBY);
-  rDash(OLX,OTY,OLX,OBY);rDash(ORX,OTY,ORX,OBY);
-
-  // Crosswalks at main intersection
-  const CWS=5,CWW=9,CWG=4,CWSP=CWS*(CWW+CWG)-CWG;
-  ctx.fillStyle='rgba(255,255,255,0.45)';
-  for(let i=0;i<CWS;i++){
-    const o=-CWSP/2+i*(CWW+CWG);
-    const s1=ws(IX+o,IY+RW);ctx.fillRect(s1.sx,s1.sy,sz(CWW),sz(12));
-    const s2=ws(IX+o,IY-RW-12);ctx.fillRect(s2.sx,s2.sy,sz(CWW),sz(12));
-    const s3=ws(IX-RW-12,IY+o);ctx.fillRect(s3.sx,s3.sy,sz(12),sz(CWW));
-    const s4=ws(IX+RW,IY+o);ctx.fillRect(s4.sx,s4.sy,sz(12),sz(CWW));}
-
-  // Stop line
-  {const sl1=ws(IX-RW,STOP_WY),sl2=ws(IX,STOP_WY);
-  ctx.strokeStyle='rgba(255,255,255,0.75)';ctx.lineWidth=sz(2.5);
-  ctx.beginPath();ctx.moveTo(sl1.sx,sl1.sy);ctx.lineTo(sl2.sx,sl2.sy);ctx.stroke();
-  const st=ws(IX-RW/2,STOP_WY+7);
-  ctx.fillStyle='rgba(255,255,255,0.35)';ctx.font=`600 ${sz(5.5)}px DM Sans`;ctx.textAlign='center';
-  ctx.fillText('STOP',st.sx,st.sy);ctx.textAlign='left';}
-
-  // Proximity zone
-  {const tlp=ws(TL_WX,TL_WY),nd=Math.hypot(car.x-TL_WX,car.y-TL_WY),nz=nd<TL_ZONE;
-  const rc=nz?(currentState==='RED'?'rgba(239,68,68,0.22)':currentState==='GREEN'?'rgba(34,197,94,0.22)':'rgba(245,158,11,0.22)'):'rgba(255,255,255,0.05)';
-  ctx.strokeStyle=rc;ctx.lineWidth=sz(1.3);ctx.setLineDash([sz(4),sz(3.5)]);
-  ctx.beginPath();ctx.arc(tlp.sx,tlp.sy,sz(TL_ZONE),0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);}
-
-  /* Edge vignette — softens the wrap seam */
-  const vg=ctx.createRadialGradient(canvas.width/2,canvas.height/2,Math.min(canvas.width,canvas.height)*.28,canvas.width/2,canvas.height/2,Math.max(canvas.width,canvas.height)*.78);
-  vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,0.72)');
-  ctx.fillStyle=vg;ctx.fillRect(0,0,canvas.width,canvas.height);
+  wOff+=.003;
+  requestAnimationFrame(draw);
 }
 
-/* ══ TRAFFIC LIGHT ══ */
-function drawTrafficLight(){
-  const p=ws(TL_WX,TL_WY);
-  ctx.fillStyle='#1a2030';ctx.beginPath();ctx.roundRect(p.sx-sz(3.5),p.sy-sz(3.5),sz(7),sz(7),sz(2));ctx.fill();
-  const sH=sz(38);
-  ctx.fillStyle='#2d3748';ctx.fillRect(p.sx-sz(2.2),p.sy-sH,sz(4.4),sH);
-  const armL=sz(36);
-  ctx.fillStyle='#2d3748';ctx.fillRect(p.sx-armL-sz(2),p.sy-sH+sz(1.5),armL,sz(3));
-  const hx=p.sx-armL-sz(4),hy=p.sy-sH-sz(2),hw=sz(14),hh=sz(38);
-  ctx.fillStyle='#0d1117';ctx.beginPath();ctx.roundRect(hx,hy,hw,hh,sz(2.5));ctx.fill();
-  ctx.strokeStyle='#2d3748';ctx.lineWidth=sz(1);ctx.stroke();
-
-  const blinkOff=currentState==='BLINK'&&Math.floor(Date.now()/380)%2===0;
-  const COLS={OFF:['#1a0000','#1a1000','#001500'],RED:['#ef4444','#1a1000','#001500'],YELLOW:['#1a0000','#f59e0b','#001500'],GREEN:['#1a0000','#1a1000','#22c55e'],BLINK:['#ef4444','#f59e0b','#22c55e']};
-  const GLOWS={RED:['rgba(239,68,68,.85)',null,null],YELLOW:[null,'rgba(245,158,11,.85)',null],GREEN:[null,null,'rgba(34,197,94,.85)'],BLINK:['rgba(239,68,68,.55)','rgba(245,158,11,.55)','rgba(34,197,94,.55)'],OFF:[null,null,null]};
-  const cols=blinkOff?COLS.OFF:(COLS[currentState]||COLS.OFF);
-  const gls =blinkOff?GLOWS.OFF:(GLOWS[currentState]||GLOWS.OFF);
-  const bR=sz(4);
-  [hy+sz(7.5),hy+sz(19),hy+sz(30.5)].forEach((by,i)=>{
-    const bx=hx+hw/2;
-    if(gls[i]){ctx.shadowColor=gls[i];ctx.shadowBlur=sz(12);}
-    ctx.fillStyle=cols[i];ctx.beginPath();ctx.arc(bx,by,bR,0,Math.PI*2);ctx.fill();
-    ctx.shadowBlur=0;
-    if(!['#1a0000','#1a1000','#001500'].includes(cols[i])){ctx.fillStyle='rgba(255,255,255,0.24)';ctx.beginPath();ctx.arc(bx-bR*.26,by-bR*.26,bR*.28,0,Math.PI*2);ctx.fill();}});
-
-  const sc={GREEN:'#4ade80',RED:'#f87171',YELLOW:'#fbbf24',BLINK:'#fbbf24',OFF:'rgba(255,255,255,.2)'};
-  ctx.fillStyle=sc[currentState]||'rgba(255,255,255,.2)';
-  ctx.font=`600 ${sz(6)}px DM Sans`;ctx.textAlign='center';
-  ctx.fillText(currentState==='OFF'?'OFF':currentState,hx+hw/2,hy-sz(3.5));
-  ctx.textAlign='left';
-}
-
-/* ══ DRAW CAR (clean, no wheel protrusions) ══ */
-function drawCar(){
-  const s=ws(car.x,car.y);
-  ctx.save();
-  ctx.globalAlpha=car.alpha;
-  ctx.translate(s.sx,s.sy);
-  ctx.rotate(car.angle+Math.PI/2);
-  const cw=sz(car.w),ch=sz(car.h);
-
-  // Shadow
-  ctx.fillStyle='rgba(0,0,0,0.28)';ctx.beginPath();ctx.ellipse(sz(1.5),sz(2.5),cw*.44,ch*.24,0,0,Math.PI*2);ctx.fill();
-
-  // Body
-  ctx.fillStyle=car.color;ctx.beginPath();ctx.roundRect(-cw/2,-ch/2,cw,ch,sz(4.5));ctx.fill();
-  ctx.fillStyle='rgba(255,255,255,0.09)';ctx.beginPath();ctx.roundRect(-cw/2,-ch/2,cw,ch*.3,[sz(4.5),sz(4.5),0,0]);ctx.fill();
-
-  // Cabin/roof
-  ctx.fillStyle=car.roof;ctx.beginPath();ctx.roundRect(-cw*.32,-ch*.2,cw*.64,ch*.35,sz(2.5));ctx.fill();
-
-  // Windshield
-  ctx.fillStyle='rgba(180,228,255,0.55)';ctx.beginPath();ctx.roundRect(-cw*.26,-ch*.18,cw*.52,ch*.13,sz(1.5));ctx.fill();
-
-  // Rear window
-  ctx.fillStyle='rgba(180,228,255,0.42)';ctx.beginPath();ctx.roundRect(-cw*.22,ch*.07,cw*.44,ch*.1,sz(1.5));ctx.fill();
-
-  // Headlights
-  ctx.fillStyle='#fefce8';ctx.shadowColor='rgba(255,245,130,.65)';ctx.shadowBlur=sz(5);
-  ctx.beginPath();ctx.roundRect(-cw*.41,-ch*.44,cw*.18,ch*.07,sz(1));ctx.fill();
-  ctx.beginPath();ctx.roundRect( cw*.23,-ch*.44,cw*.18,ch*.07,sz(1));ctx.fill();
-  ctx.shadowBlur=0;
-
-  // Tail lights
-  const braking=keys['s']||keys['S']||keys['ArrowDown'];
-  ctx.fillStyle=braking?'#ef4444':'#6b0f0f';
-  if(braking){ctx.shadowColor='rgba(239,68,68,.5)';ctx.shadowBlur=sz(5);}
-  ctx.beginPath();ctx.roundRect(-cw*.41,ch*.37,cw*.18,ch*.07,sz(1));ctx.fill();
-  ctx.beginPath();ctx.roundRect( cw*.23,ch*.37,cw*.18,ch*.07,sz(1));ctx.fill();
-  ctx.shadowBlur=0;
-
-  ctx.restore();ctx.globalAlpha=1;
-}
-
-/* ── Game loop ── */
-function gameLoop(){
-  resizeCanvas();computeScale();
-  updateCar();
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  drawWorld();drawTrafficLight();drawCar();
-  requestAnimationFrame(gameLoop);
-}
-
-/* ══ FIREBASE + COMMANDS (unchanged) ══ */
+/* ══════════════════════════════════════════════
+   FIREBASE INIT
+══════════════════════════════════════════════ */
 window.addEventListener('load',()=>{
-  resizeCanvas();window.addEventListener('resize',resizeCanvas);
-  setInterval(updateClock,1000);updateClock();
-  requestAnimationFrame(gameLoop);
-  addLog('System boot OK','green');addLog('Sayre Hwy node online','blue');addLog('Stay on road · W/↑ A/D','blue');
+  resizeCanvas();
+  draw();
+  for(let i=0;i<5;i++) spawnNPC();
+  sysLog('System boot OK');
+
   try{
     const app=firebase.initializeApp(firebaseConfig);
     db=firebase.database(app);
-    db.ref('/trafficLight').on('value',snap=>{const d=snap.val();if(d)applyState(d.trafficLightState||'OFF',d.mode||0,d.countdown||0);});
-    setFbStatus(true);addLog('Firebase connected','green');
-  }catch(e){addLog('Firebase error: '+e.message,'red');setFbStatus(false);}
-});
 
-function sendCommand(mode){
-  currentMode=mode;updateModeDisplay(mode);
-  if(db){db.ref('/trafficLight/mode').set(mode);addLog(`Mode → ${['Off','Normal','Blink'][mode]}`,mode===1?'green':mode===2?'yellow':'red');}
-  else addLog('Not connected','red');
-}
+    db.ref('/trafficLight').on('value',snap=>{
+      const d=snap.val();
+      if(d) applyState(d);
+    });
 
-function applyState(state,mode,countdown){
-  const prev=currentState;currentState=state;currentMode=mode;
-  if(prev!==state){
-    if(state!=='OFF'&&state!=='BLINK'){if(metrics[state]!==undefined){metrics[state]++;metrics.total++;}if(state==='GREEN'&&prev==='RED')cycleCount++;}
-    addLog(`State → ${state}`,state==='GREEN'?'green':state==='RED'?'red':state==='YELLOW'?'yellow':'blue');
+    document.getElementById('fbDot').className='dot live';
+    document.getElementById('fbLabel').textContent='FIREBASE';
+    sysLog('Firebase connected','green');
+    addLog('info','SYS','Firebase realtime active');
+  } catch(e){
+    document.getElementById('fbDot').className='dot';
+    document.getElementById('fbLabel').textContent='OFFLINE';
+    sysLog('Firebase error: '+e.message,'red');
+    addLog('red','ERR',e.message);
   }
-  updateLights(state);updateCountdown(countdown,state);updateModeDisplay(mode);setEspStatus(state!=='OFF');
-  document.getElementById('cycleVal').textContent=cycleCount;
-  document.getElementById('prevVal').textContent=prev!==state&&prev!=='OFF'?prev.slice(0,3):'---';
-}
-
-function updateLights(state){
-  const r=document.getElementById('bulbRed'),y=document.getElementById('bulbYellow'),g=document.getElementById('bulbGreen'),lbl=document.getElementById('stateLabel');
-  r.className='tl-bulb';y.className='tl-bulb';g.className='tl-bulb';lbl.className='state-badge';
-  if(state==='BLINK'){r.classList.add('red-on','blink-anim');y.classList.add('yellow-on','blink-anim');g.classList.add('green-on','blink-anim');lbl.textContent='⚡ Blink Mode';lbl.classList.add('yellow');}
-  else if(state==='RED'){r.classList.add('red-on');lbl.textContent='🔴 Stop';lbl.classList.add('red');}
-  else if(state==='YELLOW'){y.classList.add('yellow-on');lbl.textContent='🟡 Caution';lbl.classList.add('yellow');}
-  else if(state==='GREEN'){g.classList.add('green-on');lbl.textContent='🟢 Go';lbl.classList.add('green');}
-  else{lbl.textContent='— Offline —';}
-}
-
-function updateCountdown(secs,state){
-  const num=document.getElementById('cdNum'),bar=document.getElementById('cdBar');
-  const mx=state==='YELLOW'?2:5;
-  num.textContent=secs>0?String(secs).padStart(2,'0'):'--';
-  num.className='cd-num '+(state||'').toLowerCase();
-  bar.style.width=mx>0?Math.min(100,(secs/mx)*100)+'%':'0%';
-  bar.style.background=state==='GREEN'?'#22c55e':state==='YELLOW'?'#f59e0b':state==='RED'?'#ef4444':'#4b5563';
-}
-
-function updateModeDisplay(mode){
-  [0,1,2].forEach(m=>{const el=document.getElementById(`m${m}`);if(el)el.classList.toggle('active',m===mode);});
-  document.getElementById('modeVal').textContent={0:'Off',1:'Normal',2:'Blink'}[mode]||'---';
-}
-
-function setFbStatus(ok){document.getElementById('fbDot').className='status-dot'+(ok?' connected':'');document.getElementById('fbLabel').textContent=ok?'Firebase':'Offline';}
-function setEspStatus(ok){document.getElementById('espDot').className='status-dot'+(ok?' active':'');document.getElementById('espLabel').textContent=ok?'ESP32 On':'ESP32 Off';}
-
-function addLog(msg,cls=''){
-  const log=document.getElementById('eventLog');
-  const t=new Date().toLocaleTimeString('en',{hour12:false,hour:'2-digit',minute:'2-digit',second:'2-digit'});
-  const e=document.createElement('div');e.className='log-entry';
-  e.innerHTML=`<span class="log-time">${t}</span><span class="log-msg ${cls}">${msg}</span>`;
-  log.prepend(e);while(log.children.length>10)log.removeChild(log.lastChild);
-}
-
-function updateClock(){
-  document.getElementById('clockDisplay').textContent=new Date().toLocaleTimeString('en',{hour12:false});
-  const el=Math.floor((Date.now()-startTime)/1000);
-  document.getElementById('uptimeVal').textContent=String(Math.floor(el/60)).padStart(2,'0')+':'+String(el%60).padStart(2,'0');
-}
+});
 </script>
 </body>
 </html>

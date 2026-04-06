@@ -17,18 +17,18 @@
 #include <Firebase_ESP_Client.h>
 
 // ─── WiFi Credentials ──────────────────────────────
-#define WIFI_SSID     "K3NT0Z4K1"
-#define WIFI_PASSWORD "12345678"
+#define WIFI_SSID     "Scarlet"
+#define WIFI_PASSWORD "abcdefgh"
 
 // ─── Firebase Credentials ──────────────────────────
 // Using Database Secret (legacy token) — most reliable method
-#define FIREBASE_DB_URL  "traffic-sim-5a9ef-default-rtdb.asia-southeast1.firebasedatabase.app"
-#define FIREBASE_SECRET  "7etDsjZimq0GkGepNOJ61hIY9HYvruznDSW0A0kZ"
+#define FIREBASE_DB_URL  ""
+#define FIREBASE_SECRET  ""
 
 // ─── LED Pin Definitions ───────────────────────────
-#define RED_PIN    4
-#define YELLOW_PIN 5
-#define GREEN_PIN  18
+#define RED_PIN    25
+#define YELLOW_PIN 26
+#define GREEN_PIN  27
 
 // ─── Traffic Light Timing (milliseconds) ───────────
 #define GREEN_DURATION  15000
